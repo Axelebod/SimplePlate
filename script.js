@@ -1,73 +1,47 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Templates data
-    const templates = [
-        {
-            name: "Template Site vitrine",
-            description: "Template professionnel pour entreprises et startups",
-            price: "A partir de 79€",
-            image: "https://via.placeholder.com/400x300"
-        },
-        {
-            name: "Template Portfolio",
-            description: "Présentez votre travail de manière élégante",
-            price: "A partir de 79€",
-            image: "https://via.placeholder.com/400x300"
-        },
-        {
-            name: "Template CV",
-            description: "Pour un CV moderne et attrayant ",
-            price: "A partir de 79€",
-            image: "https://via.placeholder.com/400x300"
-        },
-        {
-            name: "Template Restaurant et Café",
-            description: "Idéal pour les restaurants et cafés modernes ",
-            price: "A partir de 79€",
-            image: "https://via.placeholder.com/400x300"
-        },
-        {
-            name: "Landing Page",
-            description: "Pour promouvoir vos réseaux sociaux ou services",
-            price: "A partir de 79€",
-            image: "https://via.placeholder.com/400x300"
-        },
-        {
-            name: "Template coach/tehrapeute",
-            description: "Template pour coachs et thérapeutes professionnels voulant se démarquer",
-            price: "A partir de 79€",
-            image: "https://via.placeholder.com/400x300"
-        }
-    ];
-
-    // Load templates
-    const templatesGrid = document.querySelector('.templates-grid');
-    
-    templates.forEach(template => {
-        const templateCard = document.createElement('div');
-        templateCard.className = 'template-card';
-        templateCard.innerHTML = `
-            <img src="${template.image}" alt="${template.name}" class="template-img">
-            <div class="template-info">
-                <h3>${template.name}</h3>
-                <p>${template.description}</p>
-                <div class="template-price">${template.price}</div>
-                <a href="#" class="btn btn-primary">voir plus</a>
-            </div>
-        `;
-        templatesGrid.appendChild(templateCard);
-    });
-
-    // Mobile menu toggle
+    // Menu mobile
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
-    const ctaButtons = document.querySelector('.cta-buttons');
-
+    
     hamburger.addEventListener('click', function() {
         navLinks.classList.toggle('active');
-        ctaButtons.classList.toggle('active');
+        hamburger.classList.toggle('fa-times');
     });
-
-    // Smooth scrolling for anchor links
+    
+    // Fermer le menu quand on clique sur un lien
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('active');
+            hamburger.classList.remove('fa-times');
+        });
+    });
+    
+    // Animation au scroll
+    const animateOnScroll = function() {
+        const elements = document.querySelectorAll('.feature-card, .pricing-card, .testimonial-card');
+        
+        elements.forEach(element => {
+            const elementPosition = element.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight / 1.2;
+            
+            if (elementPosition < screenPosition) {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }
+        });
+    };
+    
+    // Ajouter une opacité initiale pour l'animation
+    document.querySelectorAll('.feature-card, .pricing-card, .testimonial-card').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    });
+    
+    window.addEventListener('scroll', animateOnScroll);
+    animateOnScroll(); // Exécuter une fois au chargement
+    
+    // Smooth scrolling pour les ancres
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
             e.preventDefault();
@@ -81,36 +55,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     top: targetElement.offsetTop - 80,
                     behavior: 'smooth'
                 });
-                
-                // Close mobile menu if open
-                navLinks.classList.remove('active');
-                ctaButtons.classList.remove('active');
             }
         });
     });
-
-    // Animation on scroll
-    function animateOnScroll() {
-        const elements = document.querySelectorAll('.feature-card, .template-card, .pricing-card, .testimonial-card');
-        
-        elements.forEach(element => {
-            const elementPosition = element.getBoundingClientRect().top;
-            const screenPosition = window.innerHeight / 1.3;
+    
+    // Changement de couleur du header au scroll
+    window.addEventListener('scroll', function() {
+        const header = document.querySelector('header');
+        if (window.scrollY > 50) {
+            header.style.background = 'rgba(255, 255, 255, 0.95)';
+            header.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
+        } else {
+            header.style.background = 'white';
+            header.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
+        }
+    });
+    
+    // Formulaire newsletter
+    const newsletterForm = document.querySelector('.footer-newsletter form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const emailInput = this.querySelector('input[type="email"]');
             
-            if (elementPosition < screenPosition) {
-                element.style.opacity = '1';
-                element.style.transform = 'translateY(0)';
+            if (emailInput.value && emailInput.value.includes('@')) {
+                // Ici vous pourriez ajouter une requête AJAX
+                alert('Merci pour votre inscription à notre newsletter !');
+                emailInput.value = '';
+            } else {
+                alert('Veuillez entrer une adresse email valide.');
             }
         });
     }
-
-    // Set initial state for animated elements
-    document.querySelectorAll('.feature-card, .template-card, .pricing-card, .testimonial-card').forEach(element => {
-        element.style.opacity = '0';
-        element.style.transform = 'translateY(20px)';
-        element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-    });
-
-    window.addEventListener('scroll', animateOnScroll);
-    animateOnScroll(); // Run once on page load
 });
