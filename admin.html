@@ -1,0 +1,2068 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SimplePlate - Éditeur de Templates Avancé</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    :root {
+      --primary: #6a3fb5;
+      --accent: #ff7a59;
+      --dark: #2c2c2c;
+      --light: #f9f9f9;
+      --text: #333333;
+      --border: #e0e0e0;
+      --success: #4CAF50;
+      --warning: #ff9800;
+      --error: #f44336;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background: #f5f5f5;
+      overflow: hidden;
+    }
+    
+    /* Sidebar améliorée */
+    #sidebar {
+      width: 350px;
+      background: white;
+      color: var(--dark);
+      padding: 1.5rem;
+      box-sizing: border-box;
+      overflow-y: auto;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      z-index: 10;
+      transition: transform 0.3s ease;
+    }
+    
+    .sidebar-collapsed {
+      transform: translateX(-100%);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .logo-icon {
+      background: var(--primary);
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    
+    .logo-text {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .section {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .section-title {
+      display: flex;
+      align-items: center;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: var(--dark);
+    }
+    
+    .section-title i {
+      margin-right: 8px;
+      font-size: 1.2rem;
+    }
+    
+    label {
+      font-size: 0.9rem;
+      display: block;
+      margin: 0.5rem 0 0.3rem;
+      font-weight: 500;
+    }
+    
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin-bottom: 0.8rem;
+      font-size: 0.9rem;
+      transition: border 0.3s;
+    }
+    
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .color-picker-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 0.8rem;
+    }
+    
+    .color-picker {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    input[type="color"] {
+      width: 100%;
+      height: 40px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    
+    input[type="range"] {
+      width: 100%;
+      margin-bottom: 0.8rem;
+    }
+    
+    .range-value {
+      font-size: 0.8rem;
+      color: #666;
+      text-align: right;
+    }
+    
+    button {
+      padding: 12px;
+      width: 100%;
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+      transition: background 0.3s;
+      font-size: 0.9rem;
+    }
+    
+    button:hover {
+      background: #e66948;
+    }
+    
+    .btn-secondary {
+      background: var(--primary);
+    }
+    
+    .btn-secondary:hover {
+      background: #5930a0;
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+    }
+    
+    .btn-outline:hover {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-success {
+      background: var(--success);
+    }
+    
+    .btn-success:hover {
+      background: #3d8b40;
+    }
+    
+    /* Zone d'édition améliorée */
+    #editor {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--light);
+      position: relative;
+    }
+    
+    .editor-header {
+      padding: 1rem 1.5rem;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .editor-title {
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .editor-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .editor-actions button {
+      width: auto;
+      padding: 8px 16px;
+      margin: 0;
+    }
+    
+    .editor-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+      overflow: auto;
+    }
+    
+    .drop-zone {
+      width: 100%;
+      height: 100%;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      transition: all 0.3s;
+    }
+    
+    .drop-zone.active {
+      border-color: var(--primary);
+      background: #f0f0ff;
+    }
+    
+    .drop-icon {
+      font-size: 3rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+    
+    .drop-text {
+      text-align: center;
+      max-width: 400px;
+    }
+    
+    .drop-text h3 {
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+    }
+    
+    .drop-text p {
+      color: #666;
+      line-height: 1.5;
+    }
+    
+    #iframeWrapper {
+      width: 100%;
+      height: 100%;
+      display: none;
+      position: relative;
+    }
+    
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+    
+    .selected {
+      outline: 3px solid var(--accent) !important;
+      outline-offset: 2px;
+    }
+    
+    .draggable {
+      cursor: move;
+    }
+    
+    #selectedInfo {
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      color: #666;
+      background: #f0f0f0;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    
+    .template-preview {
+      display: none;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 5;
+      max-width: 300px;
+    }
+    
+    .template-preview h4 {
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+    }
+    
+    .template-preview img {
+      max-width: 100%;
+      border-radius: 4px;
+    }
+    
+    .font-preview {
+      font-size: 14px;
+      margin-top: 5px;
+      color: #666;
+    }
+    
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+    
+    .color-option {
+      height: 30px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.2s;
+    }
+    
+    .color-option:hover {
+      transform: scale(1.05);
+    }
+    
+    .color-option.active {
+      border-color: var(--dark);
+    }
+    
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 120px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -60px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px;
+    }
+    
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    .status {
+      display: inline-block;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      background: #f0f0f0;
+      color: #666;
+    }
+    
+    .status.save {
+      background: var(--success);
+      color: white;
+    }
+    
+    .history-controls {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .history-controls button {
+      width: auto;
+      flex: 1;
+    }
+    
+    /* Notifications */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 6px;
+      color: white;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateX(150%);
+      transition: transform 0.3s ease;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .notification.success {
+      background: var(--success);
+    }
+    
+    .notification.error {
+      background: var(--error);
+    }
+    
+    .notification.warning {
+      background: var(--warning);
+    }
+    
+    /* Sidebar toggle */
+    .sidebar-toggle {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    /* Loading indicator */
+    .loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+      display: none;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(106, 63, 181, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .modal-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+      width: auto;
+      padding: 0;
+    }
+    
+    .modal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .module-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .module-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .module-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .module-name {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .module-desc {
+      font-size: 0.8rem;
+      color: #666;
+    }
+    
+    /* Menu contextuel */
+    .context-menu {
+      position: absolute;
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: none;
+      min-width: 150px;
+    }
+    
+    .context-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .context-menu li {
+      padding: 10px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .context-menu li:last-child {
+      border-bottom: none;
+    }
+    
+    .context-menu li:hover {
+      background: #f5f5f5;
+    }
+    
+    /* Gestionnaire d'images */
+    .image-manager {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      margin-top: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .image-item {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    
+    .image-item img {
+      width: 100%;
+      height: 80px;
+      object-fit: cover;
+    }
+    
+    .image-item.active {
+      border-color: var(--primary);
+    }
+    
+    .image-item .delete {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+        height: auto;
+        overflow: auto;
+      }
+      
+      #sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 50vh;
+      }
+      
+      #editor {
+        height: 50vh;
+      }
+      
+      .sidebar-toggle {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <div class="logo">
+      <div class="logo-icon">SP</div>
+      <div class="logo-text">SimplePlate</div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i>📁</i> Chargement du template
+      </div>
+      <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">
+        Glissez votre fichier HTML dans la zone d'édition à droite pour commencer.
+      </p>
+      <button id="loadDemoBtn" class="btn-secondary">Charger un exemple de template</button>
+      <button id="loadFilesBtn" class="btn-outline">Charger HTML + CSS</button>
+      <button id="restoreSessionBtn" class="btn-outline">Restaurer session</button>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i>➕</i> Ajouter des éléments
+      </div>
+      <button id="addModuleBtn" class="btn-secondary">Ajouter un module</button>
+      <button id="imageManagerBtn" class="btn-outline">Gestionnaire d'images</button>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i>🔍</i> Optimisation SEO
+      </div>
+      <label for="seoTitle">Titre de la page</label>
+      <input type="text" id="seoTitle" placeholder="Titre optimisé pour le référencement">
+      
+      <label for="seoDesc">Description meta</label>
+      <textarea id="seoDesc" rows="3" placeholder="Description pour les moteurs de recherche"></textarea>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i>🎨</i> Personnalisation des couleurs
+      </div>
+      
+      <label>Couleur principale</label>
+      <div class="color-picker-container">
+        <div class="color-picker">
+          <input type="color" id="colorPrimary" value="#6a3fb5">
+        </div>
+        <div class="color-picker">
+          <input type="color" id="colorText" value="#333333">
+        </div>
+        <div class="color-picker">
+          <input type="color" id="colorBackground" value="#ffffff">
+        </div>
+      </div>
+      
+      <label>Palettes de couleurs prédéfinies</label>
+      <div class="color-grid">
+        <div class="color-option active" style="background: linear-gradient(135deg, #6a3fb5, #ff7a59);" data-primary="#6a3fb5" data-accent="#ff7a59"></div>
+        <div class="color-option" style="background: linear-gradient(135deg, #2E86AB, #A23B72);" data-primary="#2E86AB" data-accent="#A23B72"></div>
+        <div class="color-option" style="background: linear-gradient(135deg, #F18F01, #C73E1D);" data-primary="#F18F01" data-accent="#C73E1D"></div>
+        <div class="color-option" style="background: linear-gradient(135deg, #3DCCC7, #FF6B6B);" data-primary="#3DCCC7" data-accent="#FF6B6B"></div>
+        <div class="color-option" style="background: linear-gradient(135deg, #5D5FEF, #FF9E64);" data-primary="#5D5FEF" data-accent="#FF9E64"></div>
+        <div class="color-option" style="background: linear-gradient(135deg, #2A9D8F, #E9C46A);" data-primary="#2A9D8F" data-accent="#E9C46A"></div>
+      </div>
+      
+      <label for="colorAccent">Couleur d'accent</label>
+      <input type="color" id="colorAccent" value="#ff7a59">
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i>🔤</i> Typographie
+      </div>
+      <label for="fontSelect">Police de caractères</label>
+      <select id="fontSelect">
+        <option value="Arial, sans-serif">Arial</option>
+        <option value="'Roboto', sans-serif">Roboto</option>
+        <option value="'Poppins', sans-serif">Poppins</option>
+        <option value="'Open Sans', sans-serif">Open Sans</option>
+        <option value="'Lato', sans-serif">Lato</option>
+        <option value="'Montserrat', sans-serif">Montserrat</option>
+        <option value="'Raleway', sans-serif">Raleway</option>
+        <option value="'Playfair Display', serif">Playfair Display</option>
+        <option value="'Merriweather', serif">Merriweather</option>
+        <option value="'Source Sans Pro', sans-serif">Source Sans Pro</option>
+        <option value="'Oswald', sans-serif">Oswald</option>
+        <option value="'Nunito', sans-serif">Nunito</option>
+        <option value="'Quicksand', sans-serif">Quicksand</option>
+        <option value="'Rubik', sans-serif">Rubik</option>
+        <option value="'Work Sans', sans-serif">Work Sans</option>
+      </select>
+      <div class="font-preview" id="fontPreview">AaBbCc - Exemple de texte avec cette police</div>
+      
+      <label for="fontSize">Taille de police (px)</label>
+      <input type="range" id="fontSize" min="12" max="32" value="16">
+      <div class="range-value" id="fontSizeValue">16px</div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i>🖼️</i> Gestion des images
+      </div>
+      <div id="selectedInfo">Aucune image sélectionnée</div>
+      
+      <div class="tooltip">
+        <button id="replaceImageBtn">Remplacer l'image sélectionnée</button>
+        <span class="tooltiptext">Cliquez d'abord sur une image dans l'éditeur</span>
+      </div>
+      
+      <input type="file" id="imageUploader" style="display:none" accept="image/*">
+      
+      <label for="imgWidth">Largeur de l'image: <span id="widthValue">100%</span></label>
+      <input type="range" id="imgWidth" min="10" max="100" value="100">
+      
+      <button id="enableDragBtn" class="btn-outline">Activer le déplacement des images</button>
+      <button id="resetPositionBtn" class="btn-outline">Réinitialiser la position</button>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i>💾</i> Exportation
+      </div>
+      <button id="downloadBtn" class="btn-secondary">Télécharger le template modifié</button>
+      <button id="exportZipBtn" class="btn-secondary">Exporter en ZIP</button>
+      
+      <div class="history-controls">
+        <button id="undoBtn" class="btn-outline">Undo (Ctrl+Z)</button>
+        <button id="redoBtn" class="btn-outline">Redo (Ctrl+Y)</button>
+      </div>
+      
+      <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+        <div id="autosaveStatus" class="status">Autosave: off</div>
+        <button id="toggleAutosave" class="btn-outline">Activer autosave</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="editor">
+    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+    <div class="loading" id="loadingIndicator">
+      <div class="spinner"></div>
+    </div>
+    
+    <div class="editor-header">
+      <div class="editor-title">Éditeur de template SimplePlate</div>
+      <div class="editor-actions">
+        <button id="resetBtn">Réinitialiser</button>
+        <button id="helpBtn">Aide</button>
+      </div>
+    </div>
+    
+    <div class="editor-content">
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-icon">📄</div>
+        <div class="drop-text">
+          <h3>Déposez votre fichier HTML ici</h3>
+          <p>Glissez-déposez votre fichier HTML dans cette zone pour commencer l'édition. Vous pourrez ensuite personnaliser les couleurs, polices, images et le SEO.</p>
+          <p style="margin-top: 10px; font-size: 0.9rem; color: var(--primary);">Ou utilisez le bouton "Charger HTML + CSS" pour importer des fichiers séparés.</p>
+        </div>
+      </div>
+      
+      <div id="iframeWrapper">
+        <iframe id="previewFrame"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu contextuel -->
+  <div class="context-menu" id="contextMenu">
+    <ul>
+      <li id="editText">Modifier le texte</li>
+      <li id="changeImage">Changer l'image</li>
+      <li id="deleteElement">Supprimer l'élément</li>
+      <li id="duplicateElement">Dupliquer l'élément</li>
+    </ul>
+  </div>
+
+  <!-- Modal pour ajouter des modules -->
+  <div class="modal" id="moduleModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Ajouter un module</div>
+        <button class="close-modal" id="closeModuleModal">&times;</button>
+      </div>
+      <p>Sélectionnez un module à ajouter à votre template :</p>
+      <div class="modal-grid">
+        <div class="module-card" data-module="hero">
+          <div class="module-icon">🚀</div>
+          <div class="module-name">Section Hero</div>
+          <div class="module-desc">Section d'accueil avec titre et bouton</div>
+        </div>
+        <div class="module-card" data-module="features">
+          <div class="module-icon">⭐</div>
+          <div class="module-name">Section Fonctionnalités</div>
+          <div class="module-desc">Présentation de vos services</div>
+        </div>
+        <div class="module-card" data-module="gallery">
+          <div class="module-icon">🖼️</div>
+          <div class="module-name">Galerie d'images</div>
+          <div class="module-desc">Grille d'images responsives</div>
+        </div>
+        <div class="module-card" data-module="contact">
+          <div class="module-icon">📞</div>
+          <div class="module-name">Formulaire de contact</div>
+          <div class="module-desc">Formulaire avec validation</div>
+        </div>
+        <div class="module-card" data-module="team">
+          <div class="module-icon">👥</div>
+          <div class="module-name">Équipe</div>
+          <div class="module-desc">Présentation des membres</div>
+        </div>
+        <div class="module-card" data-module="testimonials">
+          <div class="module-icon">💬</div>
+          <div class="module-name">Témoignages</div>
+          <div class="module-desc">Avis de vos clients</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal pour le gestionnaire d'images -->
+  <div class="modal" id="imageManagerModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Gestionnaire d'images</div>
+        <button class="close-modal" id="closeImageManagerModal">&times;</button>
+      </div>
+      <p>Ajoutez et gérez vos images :</p>
+      <input type="file" id="bulkImageUpload" multiple accept="image/*" style="margin: 10px 0;">
+      <div class="image-manager" id="imageManager">
+        <!-- Les images seront ajoutées ici dynamiquement -->
+      </div>
+      <button id="insertSelectedImage" class="btn-secondary" style="margin-top: 15px;">Insérer l'image sélectionnée</button>
+    </div>
+  </div>
+
+  <!-- Modal pour charger HTML + CSS -->
+  <div class="modal" id="filesModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Charger HTML + CSS</div>
+        <button class="close-modal" id="closeFilesModal">&times;</button>
+      </div>
+      <p>Choisissez vos fichiers HTML et CSS :</p>
+      <div style="margin: 15px 0;">
+        <label for="htmlFile">Fichier HTML :</label>
+        <input type="file" id="htmlFile" accept=".html">
+      </div>
+      <div style="margin: 15px 0;">
+        <label for="cssFile">Fichier CSS (optionnel) :</label>
+        <input type="file" id="cssFile" accept=".css">
+      </div>
+      <button id="loadFiles" class="btn-secondary">Charger les fichiers</button>
+    </div>
+  </div>
+
+  <div id="notification" class="notification"></div>
+
+  <script>
+    // Variables globales
+    const previewFrame = document.getElementById('previewFrame');
+    const iframeWrapper = document.getElementById('iframeWrapper');
+    const dropZone = document.getElementById('dropZone');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const notification = document.getElementById('notification');
+    const contextMenu = document.getElementById('contextMenu');
+    let iframeDoc = null;
+    let selectedEl = null;
+    let selectedImage = null;
+    let dragEnabled = false;
+    let isDragging = false;
+    let autosave = false;
+    let history = [];
+    let redoStack = [];
+    const MAX_HISTORY = 60;
+    let autosaveTimer = null;
+    let isInitializing = false;
+    let imageLibrary = [];
+
+    // Fonction pour afficher des notifications
+    function showNotification(message, type = 'success', duration = 3000) {
+      notification.textContent = message;
+      notification.className = `notification ${type}`;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, duration);
+    }
+
+    // Fonction pour afficher/masquer l'indicateur de chargement
+    function setLoading(loading) {
+      loadingIndicator.style.display = loading ? 'flex' : 'none';
+    }
+
+    // Fonction pour ajouter une entrée dans l'historique
+    function pushHistory(note) {
+      try {
+        if (!iframeDoc || isInitializing) return;
+        const snapshot = iframeDoc.documentElement.outerHTML;
+        if (history.length && history[history.length-1] === snapshot) return;
+        history.push(snapshot);
+        if (history.length > MAX_HISTORY) history.shift();
+        redoStack = [];
+        updateHistoryButtons();
+      } catch(e) { console.warn(e); }
+    }
+
+    // Fonction undo
+    function undo() {
+      if (history.length < 2) return;
+      const current = history.pop();
+      redoStack.push(current);
+      const last = history[history.length-1];
+      restoreFromHTML(last);
+      updateHistoryButtons();
+      showNotification('Action annulée', 'success', 2000);
+    }
+
+    // Fonction redo
+    function redo() {
+      if (redoStack.length === 0) return;
+      const next = redoStack.pop();
+      history.push(next);
+      restoreFromHTML(next);
+      updateHistoryButtons();
+      showNotification('Action rétablie', 'success', 2000);
+    }
+
+    // Mettre à jour l'état des boutons undo/redo
+    function updateHistoryButtons() {
+      document.getElementById('undoBtn').disabled = history.length < 2;
+      document.getElementById('redoBtn').disabled = redoStack.length === 0;
+    }
+
+    // Restaurer à partir du HTML
+    function restoreFromHTML(html) {
+      if (!html) return;
+      const iframe = previewFrame;
+      iframe.contentDocument.open();
+      iframe.contentDocument.write(html);
+      iframe.contentDocument.close();
+      setupAfterLoad();
+    }
+
+    // Sauvegarder la session
+    function saveSession() {
+      if (!iframeDoc) return;
+      try {
+        localStorage.setItem('simpleplate-session', iframeDoc.documentElement.outerHTML);
+        document.getElementById('autosaveStatus').textContent = 'Autosave: on';
+      } catch(e) {
+        console.error('Erreur lors de la sauvegarde:', e);
+        showNotification('Erreur lors de la sauvegarde', 'error');
+      }
+    }
+
+    // Effacer la session
+    function clearSession() {
+      localStorage.removeItem('simpleplate-session');
+      document.getElementById('autosaveStatus').textContent = 'Autosave: off';
+    }
+
+    // Charger l'iframe avec le HTML
+    function loadIframe(html) {
+      setLoading(true);
+      iframeWrapper.style.display = 'block';
+      dropZone.style.display = 'none';
+      previewFrame.srcdoc = html;
+      previewFrame.onload = () => {
+        setupAfterLoad();
+        setLoading(false);
+      };
+    }
+
+    // Configuration après le chargement
+    function setupAfterLoad() {
+      isInitializing = true;
+      
+      try {
+        iframeDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+        iframeDoc.body.setAttribute('data-editable', 'false');
+        attachElementListeners();
+        
+        // Synchroniser les métadonnées SEO
+        document.getElementById('seoTitle').value = iframeDoc.title || '';
+        const metaDesc = iframeDoc.querySelector('meta[name="description"]');
+        document.getElementById('seoDesc').value = metaDesc ? metaDesc.content : '';
+        
+        pushHistory('initial load');
+        showNotification('Template chargé avec succès', 'success');
+      } catch(e) {
+        console.error('Erreur lors du chargement:', e);
+        showNotification('Erreur lors du chargement du template', 'error');
+      }
+      
+      isInitializing = false;
+    }
+
+    // Attacher les écouteurs d'événements aux éléments de l'iframe
+    function attachElementListeners() {
+      if (!iframeDoc) return;
+      
+      // Nettoyer les écouteurs existants
+      iframeDoc.querySelectorAll('*').forEach(el => {
+        el.onpointerdown = null;
+        el.ondblclick = null;
+        el.onclick = null;
+        el.oncontextmenu = null;
+      });
+
+      // Rendre les éléments textes éditables
+      const editableTags = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'SPAN', 'A', 'LI', 'BUTTON', 'DIV'];
+      iframeDoc.querySelectorAll(editableTags.join(',')).forEach(el => {
+        el.style.cursor = 'text';
+        el.ondblclick = (e) => {
+          e.stopPropagation();
+          startInlineEdit(el);
+        };
+        el.oncontextmenu = (e) => {
+          e.preventDefault();
+          showContextMenu(e, el);
+        };
+      });
+
+      // Gestion des images
+      iframeDoc.querySelectorAll('img').forEach(img => {
+        img.style.cursor = 'pointer';
+        img.onclick = (e) => { 
+          e.preventDefault(); 
+          e.stopPropagation(); 
+          selectImage(img); 
+        };
+        img.oncontextmenu = (e) => {
+          e.preventDefault();
+          showContextMenu(e, img);
+        };
+        makeImagePointerDraggable(img);
+      });
+
+      // Clic ailleurs pour désélectionner
+      iframeDoc.addEventListener('click', (e) => { 
+        if (e.target === iframeDoc.body) { 
+          clearSelection(); 
+        } 
+      });
+      
+      // Cacher le menu contextuel
+      iframeDoc.addEventListener('click', () => {
+        contextMenu.style.display = 'none';
+      });
+    }
+
+    // Afficher le menu contextuel
+    function showContextMenu(e, element) {
+      selectedEl = element;
+      contextMenu.style.display = 'block';
+      contextMenu.style.left = e.pageX + 'px';
+      contextMenu.style.top = e.pageY + 'px';
+      
+      // Ajuster si le menu dépasse de l'écran
+      const rect = contextMenu.getBoundingClientRect();
+      if (rect.right > window.innerWidth) {
+        contextMenu.style.left = (e.pageX - rect.width) + 'px';
+      }
+      if (rect.bottom > window.innerHeight) {
+        contextMenu.style.top = (e.pageY - rect.height) + 'px';
+      }
+    }
+
+    // Édition en ligne
+    function startInlineEdit(el) {
+      if (!iframeDoc) return;
+      clearSelection();
+      selectedEl = el;
+      el.contentEditable = 'true';
+      el.focus();
+      
+      function finish() {
+        el.contentEditable = 'false';
+        pushHistory('inline edit');
+        attachElementListeners();
+        el.removeEventListener('blur', finish);
+        el.removeEventListener('keydown', onKey);
+        if (autosave) saveSession();
+      }
+      
+      function onKey(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { 
+          e.preventDefault(); 
+          el.blur(); 
+        }
+      }
+      
+      el.addEventListener('blur', finish);
+      el.addEventListener('keydown', onKey);
+    }
+
+    // Rendre les images déplaçables avec les événements pointer
+    function makeImagePointerDraggable(img) {
+      if (!img.dataset.tx) img.dataset.tx = 0;
+      if (!img.dataset.ty) img.dataset.ty = 0;
+      img.style.touchAction = 'none';
+      
+      img.addEventListener('pointerdown', (e) => {
+        if (!dragEnabled) return;
+        isDragging = true; 
+        img.setPointerCapture(e.pointerId);
+        const startX = e.clientX; 
+        const startY = e.clientY;
+        const startTx = parseFloat(img.dataset.tx) || 0; 
+        const startTy = parseFloat(img.dataset.ty) || 0;
+        
+        function onMove(ev) {
+          const dx = ev.clientX - startX; 
+          const dy = ev.clientY - startY;
+          img.dataset.tx = startTx + dx; 
+          img.dataset.ty = startTy + dy;
+          img.style.transform = `translate(${img.dataset.tx}px, ${img.dataset.ty}px)`;
+        }
+        
+        function onUp(ev) {
+          isDragging = false; 
+          img.releasePointerCapture(e.pointerId); 
+          document.removeEventListener('pointermove', onMove); 
+          document.removeEventListener('pointerup', onUp); 
+          pushHistory('image move'); 
+          if (autosave) saveSession(); 
+        }
+        
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+      });
+    }
+
+    // Sélectionner une image
+    function selectImage(img) { 
+      clearSelection(); 
+      selectedImage = img; 
+      img.classList.add('selected'); 
+      document.getElementById('selectedInfo').textContent = 'Image sélectionnée ✓';
+      
+      // Synchroniser les contrôles
+      const widthVal = img.style.width && img.style.width.includes('%') ? 
+        parseInt(img.style.width) : 
+        Math.round((img.getBoundingClientRect().width / (iframeDoc.body.clientWidth || 1)) * 100);
+      document.getElementById('imgWidth').value = widthVal;
+      document.getElementById('widthValue').textContent = widthVal + '%';
+    }
+
+    // Effacer la sélection
+    function clearSelection() { 
+      if (selectedImage) { 
+        selectedImage.classList.remove('selected'); 
+        selectedImage = null; 
+        document.getElementById('selectedInfo').textContent = 'Aucune image sélectionnée'; 
+      }
+      selectedEl = null;
+    }
+
+    // Charger un exemple de template
+    document.getElementById("loadDemoBtn").addEventListener("click", () => {
+      const demoHTML = `
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Template SimplePlate</title>
+          <style>
+            :root {
+              --primary: #6a3fb5;
+              --accent: #ff7a59;
+              --text: #333333;
+              --background: #ffffff;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+              line-height: 1.6;
+              color: var(--text);
+              background: var(--background);
+            }
+            .container {
+              max-width: 1200px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            header {
+              background: var(--primary);
+              color: white;
+              padding: 1rem 0;
+              text-align: center;
+            }
+            .hero {
+              background: #f5f5f5;
+              padding: 3rem 1rem;
+              text-align: center;
+            }
+            .hero h1 {
+              color: var(--primary);
+              margin-bottom: 1rem;
+            }
+            .btn {
+              display: inline-block;
+              background: var(--accent);
+              color: white;
+              padding: 10px 20px;
+              text-decoration: none;
+              border-radius: 4px;
+              margin-top: 1rem;
+            }
+            .features {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              gap: 2rem;
+              padding: 3rem 1rem;
+            }
+            .feature {
+              text-align: center;
+            }
+            .feature img {
+              max-width: 100%;
+              height: 200px;
+              object-fit: cover;
+              border-radius: 8px;
+            }
+            footer {
+              background: #333;
+              color: white;
+              text-align: center;
+              padding: 2rem 0;
+            }
+          </style>
+        </head>
+        <body>
+          <header>
+            <div class="container">
+              <h1>Mon Site Web</h1>
+              <p>Un template SimplePlate personnalisable</p>
+            </div>
+          </header>
+          
+          <section class="hero">
+            <div class="container">
+              <h1>Bienvenue sur notre site</h1>
+              <p>Ceci est un exemple de template que vous pouvez modifier à votre guise.</p>
+              <a href="#" class="btn">En savoir plus</a>
+            </div>
+          </section>
+          
+          <section class="features">
+            <div class="feature">
+              <img src="https://via.placeholder.com/400x200/6a3fb5/ffffff?text=Image+1" alt="Feature 1">
+              <h3>Fonctionnalité 1</h3>
+              <p>Description de la première fonctionnalité.</p>
+            </div>
+            <div class="feature">
+              <img src="https://via.placeholder.com/400x200/ff7a59/ffffff?text=Image+2" alt="Feature 2">
+              <h3>Fonctionnalité 2</h3>
+              <p>Description de la deuxième fonctionnalité.</p>
+            </div>
+            <div class="feature">
+              <img src="https://via.placeholder.com/400x200/333333/ffffff?text=Image+3" alt="Feature 3">
+              <h3>Fonctionnalité 3</h3>
+              <p>Description de la troisième fonctionnalité.</p>
+            </div>
+          </section>
+          
+          <footer>
+            <div class="container">
+              <p>&copy; 2023 Mon Site Web. Tous droits réservés.</p>
+            </div>
+          </footer>
+        </body>
+        </html>
+      `;
+      
+      loadIframe(demoHTML);
+    });
+
+    // Aperçu des polices
+    document.getElementById('fontSelect').addEventListener('change', function() {
+      document.getElementById('fontPreview').style.fontFamily = this.value;
+      if (iframeDoc) {
+        iframeDoc.body.style.fontFamily = this.value;
+        pushHistory('font change');
+        if (autosave) saveSession();
+      }
+    });
+
+    // Taille de police
+    document.getElementById('fontSize').addEventListener('input', function() {
+      document.getElementById('fontSizeValue').textContent = this.value + 'px';
+      if (iframeDoc) {
+        iframeDoc.body.style.fontSize = this.value + 'px';
+        pushHistory('font size change');
+        if (autosave) saveSession();
+      }
+    });
+
+    // Palettes de couleurs prédéfinies
+    document.querySelectorAll('.color-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+        this.classList.add('active');
+        
+        const primary = this.getAttribute('data-primary');
+        const accent = this.getAttribute('data-accent');
+        
+        document.getElementById('colorPrimary').value = primary;
+        document.getElementById('colorAccent').value = accent;
+        
+        updateColors();
+      });
+    });
+
+    // Mise à jour des couleurs
+    function updateColors() {
+      if (!iframeDoc) return;
+      
+      const primary = document.getElementById('colorPrimary').value;
+      const accent = document.getElementById('colorAccent').value;
+      const text = document.getElementById('colorText').value;
+      const background = document.getElementById('colorBackground').value;
+      
+      // Mettre à jour les variables CSS
+      iframeDoc.documentElement.style.setProperty('--primary', primary);
+      iframeDoc.documentElement.style.setProperty('--accent', accent);
+      iframeDoc.documentElement.style.setProperty('--text', text);
+      iframeDoc.documentElement.style.setProperty('--background', background);
+      
+      // Mettre à jour les éléments avec ces couleurs
+      iframeDoc.querySelectorAll('header').forEach(el => {
+        el.style.backgroundColor = primary;
+      });
+      
+      iframeDoc.querySelectorAll('.btn').forEach(el => {
+        el.style.backgroundColor = accent;
+      });
+      
+      iframeDoc.body.style.color = text;
+      iframeDoc.body.style.backgroundColor = background;
+      
+      pushHistory('colors update');
+      if (autosave) saveSession();
+    }
+
+    // Écouteurs pour les changements de couleur
+    document.getElementById('colorPrimary').addEventListener('input', updateColors);
+    document.getElementById('colorAccent').addEventListener('input', updateColors);
+    document.getElementById('colorText').addEventListener('input', updateColors);
+    document.getElementById('colorBackground').addEventListener('input', updateColors);
+
+    // Drag & Drop amélioré
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('active');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('active');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('active');
+      const file = e.dataTransfer.files[0];
+      
+      if (file && file.type === 'text/html') {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          loadIframe(evt.target.result);
+        };
+        reader.onerror = () => {
+          showNotification('Erreur lors de la lecture du fichier', 'error');
+        };
+        reader.readAsText(file);
+      } else {
+        showNotification('Veuillez déposer un fichier HTML valide.', 'error');
+      }
+    });
+
+    // Activer/désactiver le déplacement des images
+    document.getElementById('enableDragBtn').addEventListener('click', function() {
+      dragEnabled = !dragEnabled;
+      
+      if (dragEnabled) {
+        this.textContent = 'Désactiver le déplacement';
+        this.style.backgroundColor = '#4CAF50';
+        this.style.color = 'white';
+        showNotification('Mode déplacement activé ! Cliquez sur une image et faites-la glisser pour la déplacer.', 'success');
+      } else {
+        this.textContent = 'Activer le déplacement';
+        this.style.backgroundColor = '';
+        this.style.color = '';
+      }
+    });
+
+    // Réinitialiser la position des images
+    document.getElementById('resetPositionBtn').addEventListener('click', function() {
+      if (!iframeDoc) return;
+      
+      iframeDoc.querySelectorAll('img').forEach(img => {
+        img.dataset.tx = 0;
+        img.dataset.ty = 0;
+        img.style.transform = '';
+      });
+      
+      pushHistory('reset images');
+      if (autosave) saveSession();
+      showNotification('Position des images réinitialisée !', 'success');
+    });
+
+    // Gestion SEO
+    document.getElementById('seoTitle').addEventListener('input', (e) => {
+      if (iframeDoc) {
+        iframeDoc.title = e.target.value;
+        pushHistory('seo title');
+        if (autosave) saveSession();
+      }
+    });
+
+    document.getElementById('seoDesc').addEventListener('input', (e) => {
+      if (!iframeDoc) return;
+      let metaDesc = iframeDoc.querySelector('meta[name="description"]');
+      if (!metaDesc) {
+        metaDesc = iframeDoc.createElement('meta');
+        metaDesc.name = 'description';
+        iframeDoc.head.appendChild(metaDesc);
+      }
+      metaDesc.content = e.target.value;
+      pushHistory('seo description');
+      if (autosave) saveSession();
+    });
+
+    // Gestion des images
+    document.getElementById('replaceImageBtn').addEventListener('click', () => {
+      if (!selectedImage) {
+        showNotification('Veuillez d\'abord sélectionner une image en cliquant dessus.', 'warning');
+        return;
+      }
+      document.getElementById('imageUploader').click();
+    });
+
+    document.getElementById('imageUploader').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file || !selectedImage) return;
+      
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        selectedImage.src = evt.target.result;
+        pushHistory('image replace');
+        if (autosave) saveSession();
+        showNotification('Image remplacée avec succès', 'success');
+      };
+      reader.onerror = () => {
+        showNotification('Erreur lors du chargement de l\'image', 'error');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Contrôles de taille d'image
+    document.getElementById('imgWidth').addEventListener('input', (e) => {
+      if (selectedImage) {
+        selectedImage.style.width = e.target.value + '%';
+        document.getElementById('widthValue').textContent = e.target.value + '%';
+        pushHistory('image width');
+        if (autosave) saveSession();
+      }
+    });
+
+    // Téléchargement
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      if (!iframeDoc) {
+        showNotification('Veuillez d\'abord charger un template.', 'warning');
+        return;
+      }
+      
+      try {
+        const blob = new Blob([iframeDoc.documentElement.outerHTML], {type: 'text/html'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'template-simpleplate.html';
+        a.click();
+        URL.revokeObjectURL(url);
+        showNotification('Template téléchargé avec succès', 'success');
+      } catch(e) {
+        console.error('Erreur lors du téléchargement:', e);
+        showNotification('Erreur lors du téléchargement', 'error');
+      }
+    });
+
+    // Export ZIP
+    document.getElementById('exportZipBtn').addEventListener('click', () => {
+      if (!iframeDoc) {
+        showNotification('Veuillez d\'abord charger un template.', 'warning');
+        return;
+      }
+      
+      setLoading(true);
+      
+      try {
+        const zip = new JSZip();
+        zip.file('index.html', iframeDoc.documentElement.outerHTML);
+        
+        // Ajouter les images au ZIP
+        const imgs = Array.from(iframeDoc.querySelectorAll('img'));
+        let promises = [];
+        
+        imgs.forEach((img, idx) => {
+          const src = img.src;
+          if (src.startsWith('data:')) {
+            const arr = src.split(',');
+            const mime = arr[0].match(/data:(.*);base64/)[1];
+            const b64 = arr[1];
+            zip.file('assets/image_' + idx + '.' + mime.split('/')[1], b64, {base64: true});
+          } else {
+            promises.push(
+              fetch(src)
+                .then(r => r.blob())
+                .then(b => {
+                  zip.file('assets/image_' + idx + getExt(src), b);
+                })
+                .catch(() => {})
+            );
+          }
+        });
+        
+        Promise.all(promises).then(() => {
+          zip.generateAsync({type: 'blob'}).then(content => {
+            saveAs(content, 'simpleplate-template.zip');
+            setLoading(false);
+            showNotification('Export ZIP terminé avec succès', 'success');
+          });
+        }).catch(e => {
+          console.error('Erreur lors de l\'export ZIP:', e);
+          setLoading(false);
+          showNotification('Erreur lors de l\'export ZIP', 'error');
+        });
+      } catch(e) {
+        console.error('Erreur lors de l\'export ZIP:', e);
+        setLoading(false);
+        showNotification('Erreur lors de l\'export ZIP', 'error');
+      }
+    });
+
+    function getExt(url) {
+      try {
+        const p = url.split('?')[0];
+        const ext = p.substring(p.lastIndexOf('.')) || '.png';
+        return ext;
+      } catch(e) {
+        return '.png';
+      }
+    }
+
+    // Undo/Redo
+    document.getElementById('undoBtn').addEventListener('click', undo);
+    document.getElementById('redoBtn').addEventListener('click', redo);
+
+    // Raccourcis clavier
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'Z'))) {
+        e.preventDefault();
+        redo();
+      }
+    });
+
+    // Autosave
+    document.getElementById('toggleAutosave').addEventListener('click', () => {
+      autosave = !autosave;
+      document.getElementById('autosaveStatus').textContent = autosave ? 'Autosave: on' : 'Autosave: off';
+      if (autosave) {
+        saveSession();
+        autosaveTimer = setInterval(() => saveSession(), 5000);
+        showNotification('Sauvegarde automatique activée', 'success');
+      } else {
+        clearInterval(autosaveTimer);
+        showNotification('Sauvegarde automatique désactivée', 'warning');
+      }
+    });
+
+    // Restaurer session
+    document.getElementById('restoreSessionBtn').addEventListener('click', () => {
+      const s = localStorage.getItem('simpleplate-session');
+      if (!s) {
+        showNotification('Aucune session trouvée', 'warning');
+        return;
+      }
+      if (confirm('Restaurer la session sauvegardée ?')) {
+        loadIframe(s);
+      }
+    });
+
+    // Réinitialisation
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      if (confirm('Voulez-vous vraiment réinitialiser l\'éditeur ? Toutes les modifications seront perdues.')) {
+        location.reload();
+      }
+    });
+
+    // Aide
+    document.getElementById('helpBtn').addEventListener('click', () => {
+      showNotification(`
+        SimplePlate Éditeur - Aide:
+        1. Glissez-déposez un fichier HTML ou chargez un exemple
+        2. Double-cliquez sur les textes pour les modifier
+        3. Cliquez sur les images pour les sélectionner
+        4. Utilisez les options de la barre latérale pour personnaliser
+        5. Activez le déplacement pour déplacer les images
+        6. Utilisez Ctrl+Z/Ctrl+Y pour annuler/rétablir
+        7. Téléchargez votre template finalisé
+      `, 'success', 8000);
+    });
+
+    // Basculer la sidebar
+    document.getElementById('sidebarToggle').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
+    });
+
+    // Gestionnaire d'images
+    document.getElementById('imageManagerBtn').addEventListener('click', () => {
+      document.getElementById('imageManagerModal').style.display = 'flex';
+      updateImageManager();
+    });
+
+    document.getElementById('closeImageManagerModal').addEventListener('click', () => {
+      document.getElementById('imageManagerModal').style.display = 'none';
+    });
+
+    // Mettre à jour le gestionnaire d'images
+    function updateImageManager() {
+      const imageManager = document.getElementById('imageManager');
+      imageManager.innerHTML = '';
+      
+      imageLibrary.forEach((image, index) => {
+        const imageItem = document.createElement('div');
+        imageItem.className = 'image-item';
+        imageItem.innerHTML = `
+          <img src="${image.url}" alt="Image ${index}">
+          <button class="delete" data-index="${index}">×</button>
+        `;
+        imageItem.addEventListener('click', () => {
+          document.querySelectorAll('.image-item').forEach(item => item.classList.remove('active'));
+          imageItem.classList.add('active');
+        });
+        imageManager.appendChild(imageItem);
+      });
+      
+      // Ajouter les écouteurs pour les boutons de suppression
+      document.querySelectorAll('.image-item .delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const index = parseInt(btn.getAttribute('data-index'));
+          imageLibrary.splice(index, 1);
+          updateImageManager();
+        });
+      });
+    }
+
+    // Upload d'images en lot
+    document.getElementById('bulkImageUpload').addEventListener('change', (e) => {
+      const files = e.target.files;
+      if (files.length === 0) return;
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) continue;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          imageLibrary.push({
+            url: event.target.result,
+            name: file.name
+          });
+          if (i === files.length - 1) {
+            updateImageManager();
+            showNotification(`${files.length} image(s) ajoutée(s) à la bibliothèque`, 'success');
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Insérer une image sélectionnée
+    document.getElementById('insertSelectedImage').addEventListener('click', () => {
+      const activeItem = document.querySelector('.image-item.active');
+      if (!activeItem) {
+        showNotification('Veuillez d\'abord sélectionner une image', 'warning');
+        return;
+      }
+      
+      const imgIndex = parseInt(activeItem.querySelector('.delete').getAttribute('data-index'));
+      const imageUrl = imageLibrary[imgIndex].url;
+      
+      if (!iframeDoc) {
+        showNotification('Veuillez d\'abord charger un template', 'warning');
+        return;
+      }
+      
+      // Créer une nouvelle image
+      const newImg = iframeDoc.createElement('img');
+      newImg.src = imageUrl;
+      newImg.alt = 'Nouvelle image';
+      newImg.style.maxWidth = '100%';
+      newImg.style.height = 'auto';
+      
+      // Ajouter au body
+      iframeDoc.body.appendChild(newImg);
+      
+      // Re-attacher les écouteurs
+      attachElementListeners();
+      
+      pushHistory('image added');
+      if (autosave) saveSession();
+      
+      document.getElementById('imageManagerModal').style.display = 'none';
+      showNotification('Image insérée avec succès', 'success');
+    });
+
+    // Ajouter des modules
+    document.getElementById('addModuleBtn').addEventListener('click', () => {
+      document.getElementById('moduleModal').style.display = 'flex';
+    });
+
+    document.getElementById('closeModuleModal').addEventListener('click', () => {
+      document.getElementById('moduleModal').style.display = 'none';
+    });
+
+    // Gestion des modules
+    document.querySelectorAll('.module-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const moduleType = card.getAttribute('data-module');
+        addModule(moduleType);
+        document.getElementById('moduleModal').style.display = 'none';
+      });
+    });
+
+    function addModule(moduleType) {
+      if (!iframeDoc) {
+        showNotification('Veuillez d\'abord charger un template', 'warning');
+        return;
+      }
+      
+      let moduleHTML = '';
+      
+      switch(moduleType) {
+        case 'hero':
+          moduleHTML = `
+            <section class="hero" style="background: #f5f5f5; padding: 4rem 1rem; text-align: center;">
+              <div class="container">
+                <h1>Titre principal</h1>
+                <p>Description de votre site ou service.</p>
+                <a href="#" class="btn" style="display: inline-block; background: var(--accent); color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin-top: 1rem;">En savoir plus</a>
+              </div>
+            </section>
+          `;
+          break;
+        case 'features':
+          moduleHTML = `
+            <section class="features" style="padding: 3rem 1rem;">
+              <div class="container">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Nos fonctionnalités</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                  <div class="feature" style="text-align: center;">
+                    <h3>Fonctionnalité 1</h3>
+                    <p>Description de la fonctionnalité.</p>
+                  </div>
+                  <div class="feature" style="text-align: center;">
+                    <h3>Fonctionnalité 2</h3>
+                    <p>Description de la fonctionnalité.</p>
+                  </div>
+                  <div class="feature" style="text-align: center;">
+                    <h3>Fonctionnalité 3</h3>
+                    <p>Description de la fonctionnalité.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          `;
+          break;
+        case 'gallery':
+          moduleHTML = `
+            <section class="gallery" style="padding: 3rem 1rem;">
+              <div class="container">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Galerie</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                  <img src="https://via.placeholder.com/300x200/6a3fb5/ffffff?text=Image+1" alt="Image 1" style="width: 100%; height: auto; border-radius: 8px;">
+                  <img src="https://via.placeholder.com/300x200/ff7a59/ffffff?text=Image+2" alt="Image 2" style="width: 100%; height: auto; border-radius: 8px;">
+                  <img src="https://via.placeholder.com/300x200/333333/ffffff?text=Image+3" alt="Image 3" style="width: 100%; height: auto; border-radius: 8px;">
+                </div>
+              </div>
+            </section>
+          `;
+          break;
+        case 'contact':
+          moduleHTML = `
+            <section class="contact" style="padding: 3rem 1rem; background: #f5f5f5;">
+              <div class="container">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Contactez-nous</h2>
+                <form style="max-width: 500px; margin: 0 auto;">
+                  <div style="margin-bottom: 1rem;">
+                    <label for="name" style="display: block; margin-bottom: 0.5rem;">Nom</label>
+                    <input type="text" id="name" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                  </div>
+                  <div style="margin-bottom: 1rem;">
+                    <label for="email" style="display: block; margin-bottom: 0.5rem;">Email</label>
+                    <input type="email" id="email" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                  </div>
+                  <div style="margin-bottom: 1rem;">
+                    <label for="message" style="display: block; margin-bottom: 0.5rem;">Message</label>
+                    <textarea id="message" rows="5" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
+                  </div>
+                  <button type="submit" style="background: var(--primary); color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Envoyer</button>
+                </form>
+              </div>
+            </section>
+          `;
+          break;
+        case 'team':
+          moduleHTML = `
+            <section class="team" style="padding: 3rem 1rem;">
+              <div class="container">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Notre équipe</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
+                  <div style="text-align: center;">
+                    <img src="https://via.placeholder.com/150x150/6a3fb5/ffffff?text=Photo" alt="Membre 1" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
+                    <h3>Nom du membre</h3>
+                    <p>Poste</p>
+                  </div>
+                  <div style="text-align: center;">
+                    <img src="https://via.placeholder.com/150x150/ff7a59/ffffff?text=Photo" alt="Membre 2" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
+                    <h3>Nom du membre</h3>
+                    <p>Poste</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          `;
+          break;
+        case 'testimonials':
+          moduleHTML = `
+            <section class="testimonials" style="padding: 3rem 1rem; background: #f5f5f5;">
+              <div class="container">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Témoignages</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                  <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <p>"Excellent service ! Je recommande vivement."</p>
+                    <p><strong>- Client satisfait</strong></p>
+                  </div>
+                  <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <p>"Très professionnel et à l'écoute."</p>
+                    <p><strong>- Autre client</strong></p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          `;
+          break;
+      }
+      
+      // Ajouter le module au body
+      iframeDoc.body.insertAdjacentHTML('beforeend', moduleHTML);
+      
+      // Re-attacher les écouteurs
+      attachElementListeners();
+      
+      pushHistory('module added');
+      if (autosave) saveSession();
+      
+      showNotification('Module ajouté avec succès', 'success');
+    }
+
+    // Charger HTML + CSS
+    document.getElementById('loadFilesBtn').addEventListener('click', () => {
+      document.getElementById('filesModal').style.display = 'flex';
+    });
+
+    document.getElementById('closeFilesModal').addEventListener('click', () => {
+      document.getElementById('filesModal').style.display = 'none';
+    });
+
+    document.getElementById('loadFiles').addEventListener('click', () => {
+      const htmlFile = document.getElementById('htmlFile').files[0];
+      const cssFile = document.getElementById('cssFile').files[0];
+      
+      if (!htmlFile) {
+        showNotification('Veuillez sélectionner un fichier HTML', 'warning');
+        return;
+      }
+      
+      const htmlReader = new FileReader();
+      htmlReader.onload = (e) => {
+        let htmlContent = e.target.result;
+        
+        if (cssFile) {
+          const cssReader = new FileReader();
+          cssReader.onload = (e) => {
+            const cssContent = e.target.result;
+            // Injecter le CSS dans le HTML
+            const styleTag = `<style>${cssContent}</style>`;
+            if (htmlContent.includes('</head>')) {
+              htmlContent = htmlContent.replace('</head>', styleTag + '</head>');
+            } else {
+              htmlContent = styleTag + htmlContent;
+            }
+            loadIframe(htmlContent);
+            document.getElementById('filesModal').style.display = 'none';
+          };
+          cssReader.readAsText(cssFile);
+        } else {
+          loadIframe(htmlContent);
+          document.getElementById('filesModal').style.display = 'none';
+        }
+      };
+      htmlReader.readAsText(htmlFile);
+    });
+
+    // Gestion du menu contextuel
+    document.getElementById('editText').addEventListener('click', () => {
+      if (selectedEl) {
+        startInlineEdit(selectedEl);
+      }
+      contextMenu.style.display = 'none';
+    });
+
+    document.getElementById('changeImage').addEventListener('click', () => {
+      if (selectedEl && selectedEl.tagName === 'IMG') {
+        selectImage(selectedEl);
+        document.getElementById('imageUploader').click();
+      }
+      contextMenu.style.display = 'none';
+    });
+
+    document.getElementById('deleteElement').addEventListener('click', () => {
+      if (selectedEl && selectedEl.parentNode) {
+        selectedEl.parentNode.removeChild(selectedEl);
+        pushHistory('element deleted');
+        if (autosave) saveSession();
+        showNotification('Élément supprimé', 'success');
+      }
+      contextMenu.style.display = 'none';
+    });
+
+    document.getElementById('duplicateElement').addEventListener('click', () => {
+      if (selectedEl && selectedEl.parentNode) {
+        const clone = selectedEl.cloneNode(true);
+        selectedEl.parentNode.insertBefore(clone, selectedEl.nextSibling);
+        pushHistory('element duplicated');
+        if (autosave) saveSession();
+        showNotification('Élément dupliqué', 'success');
+      }
+      contextMenu.style.display = 'none';
+    });
+
+    // Sauvegarde automatique à la fermeture
+    window.addEventListener('beforeunload', () => {
+      if (iframeDoc) {
+        try {
+          localStorage.setItem('simpleplate-session', iframeDoc.documentElement.outerHTML);
+        } catch(e) {
+          console.error('Erreur lors de la sauvegarde automatique:', e);
+        }
+      }
+    });
+
+    // Initialisation
+    updateHistoryButtons();
+  </script>
+</body>
+</html>
