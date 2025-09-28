@@ -3,21 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SimplePlate - Éditeur de Templates Avancé</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>SimplePlate - Éditeur Templates Tailwind Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --primary: #6a3fb5;
-      --accent: #ff7a59;
-      --dark: #2c2c2c;
-      --light: #f9f9f9;
-      --text: #333333;
-      --border: #e0e0e0;
-      --success: #4CAF50;
-      --warning: #ff9800;
-      --error: #f44336;
+      --primary: #8b5cf6;
+      --primary-dark: #7c3aed;
+      --primary-light: #a78bfa;
+      --accent: #ec4899;
+      --accent-dark: #db2777;
+      --dark: #1f2937;
+      --light: #f9fafb;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+    }
+    
+    /* Variables pour le mode sombre */
+    [data-theme="dark"] {
+      --primary: #a78bfa;
+      --primary-dark: #8b5cf6;
+      --primary-light: #c4b5fd;
+      --accent: #f472b6;
+      --accent-dark: #ec4899;
+      --dark: #f9fafb;
+      --light: #111827;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --border: #374151;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --error: #f87171;
     }
     
     * {
@@ -26,2043 +48,2022 @@
       padding: 0;
     }
     
+    /* Loading Screen */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      transition: opacity 0.5s ease-out;
+    }
+    
+    .loading-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .loading-content {
+      text-align: center;
+      animation: fadeInUp 0.8s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .loading-logo {
+      background: rgba(255, 255, 255, 0.95);
+      width: 120px;
+      height: 120px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 48px;
+      margin: 0 auto 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      background: linear-gradient(135deg, white 0%, #f3f4f6 100%);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .loading-logo span {
+      background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .loading-text {
+      color: white;
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .loading-subtext {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 16px;
+      margin-bottom: 40px;
+    }
+    
+    .loading-progress {
+      width: 300px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 0 auto 30px;
+    }
+    
+    .loading-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #8b5cf6, #ec4899, #8b5cf6);
+      background-size: 200% 100%;
+      animation: progressAnimation 2s ease-in-out, shimmer 2s linear infinite;
+      width: 100%;
+    }
+    
+    @keyframes progressAnimation {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    .loading-recommendation {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      padding: 16px 32px;
+      border-radius: 12px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      margin-top: 20px;
+      animation: slideInUp 1s ease-out 0.5s backwards;
+    }
+    
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .loading-icon {
+      font-size: 24px;
+    }
+    
+    /* Main app styles */
     body {
       font-family: 'Inter', sans-serif;
       display: flex;
       height: 100vh;
-      margin: 0;
       color: var(--text);
-      background: #f5f5f5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       overflow: hidden;
+      transition: background 0.3s, color 0.3s;
     }
     
-    /* Sidebar améliorée */
-    #sidebar {
-      width: 350px;
-      background: white;
-      color: var(--dark);
-      padding: 1.5rem;
-      box-sizing: border-box;
-      overflow-y: auto;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-      z-index: 10;
-      transition: transform 0.3s ease;
+    body[data-theme="dark"] {
+      background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
     }
     
-    .sidebar-collapsed {
-      transform: translateX(-100%);
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.03);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    body[data-theme="dark"]::before {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .app-container {
+      display: none;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .app-container.show {
+      display: flex;
+    }
+    
+    .top-toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 1000;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s;
+    }
+    
+    body[data-theme="dark"] .top-toolbar {
+      background: rgba(17, 24, 39, 0.95);
+      border-bottom: 1px solid rgba(55, 65, 81, 0.5);
     }
     
     .logo {
       display: flex;
       align-items: center;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
+      gap: 12px;
     }
     
     .logo-icon {
-      background: var(--primary);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
       color: white;
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 10px;
-      font-weight: bold;
+      font-weight: 800;
+      font-size: 16px;
+      box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.25);
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
     }
     
     .logo-text {
-      font-size: 1.4rem;
+      font-size: 1.25rem;
       font-weight: 700;
-      color: var(--primary);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     
-    .section {
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
-    }
-    
-    .section-title {
+    .toolbar-actions {
       display: flex;
       align-items: center;
-      font-size: 1.1rem;
-      margin-bottom: 1rem;
-      color: var(--dark);
+      gap: 12px;
     }
     
-    .section-title i {
-      margin-right: 8px;
-      font-size: 1.2rem;
-    }
-    
-    label {
-      font-size: 0.9rem;
-      display: block;
-      margin: 0.5rem 0 0.3rem;
-      font-weight: 500;
-    }
-    
-    input[type="text"],
-    textarea,
-    select {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      margin-bottom: 0.8rem;
-      font-size: 0.9rem;
-      transition: border 0.3s;
-    }
-    
-    input[type="text"]:focus,
-    textarea:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-    
-    .color-picker-container {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 0.8rem;
-    }
-    
-    .color-picker {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    input[type="color"] {
-      width: 100%;
-      height: 40px;
+    .btn {
+      padding: 10px 20px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-    }
-    
-    input[type="range"] {
-      width: 100%;
-      margin-bottom: 0.8rem;
-    }
-    
-    .range-value {
-      font-size: 0.8rem;
-      color: #666;
-      text-align: right;
-    }
-    
-    button {
-      padding: 12px;
-      width: 100%;
-      border: none;
-      background: var(--accent);
-      color: white;
+      font-size: 14px;
       font-weight: 600;
-      cursor: pointer;
-      border-radius: 6px;
-      margin-top: 0.5rem;
-      transition: background 0.3s;
-      font-size: 0.9rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
     }
     
-    button:hover {
-      background: #e66948;
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.25);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.3);
     }
     
     .btn-secondary {
-      background: var(--primary);
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.25);
     }
     
     .btn-secondary:hover {
-      background: #5930a0;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.3);
     }
     
     .btn-outline {
-      background: transparent;
-      border: 1px solid var(--primary);
-      color: var(--primary);
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid var(--border);
+      color: var(--text);
     }
     
-    .btn-outline:hover {
-      background: var(--primary);
-      color: white;
-    }
-    
-    .btn-success {
-      background: var(--success);
-    }
-    
-    .btn-success:hover {
-      background: #3d8b40;
-    }
-    
-    /* Zone d'édition améliorée */
-    #editor {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: var(--light);
-      position: relative;
-    }
-    
-    .editor-header {
-      padding: 1rem 1.5rem;
-      background: white;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .editor-title {
-      font-weight: 600;
+    body[data-theme="dark"] .btn-outline {
+      background: rgba(17, 24, 39, 0.9);
       color: var(--dark);
     }
     
-    .editor-actions {
+    .btn-outline:hover {
+      background: white;
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+    
+    body[data-theme="dark"] .btn-outline:hover {
+      background: var(--dark);
+    }
+    
+    .left-sidebar {
+      width: 320px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(229, 231, 235, 0.5);
+      margin-top: 64px;
+      overflow-y: auto;
+      height: calc(100vh - 64px);
+      position: relative;
+      z-index: 100;
+      box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s;
+    }
+    
+    body[data-theme="dark"] .left-sidebar {
+      background: rgba(17, 24, 39, 0.95);
+      border-right: 1px solid rgba(55, 65, 81, 0.5);
+    }
+    
+    .sidebar-section {
+      border-bottom: 1px solid var(--border);
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    .sidebar-header {
+      padding: 16px 20px;
+      font-weight: 600;
+      color: var(--dark);
+      background: linear-gradient(to right, rgba(139, 92, 246, 0.05), rgba(236, 72, 153, 0.05));
+      cursor: pointer;
       display: flex;
-      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s;
+      user-select: none;
     }
     
-    .editor-actions button {
-      width: auto;
+    body[data-theme="dark"] .sidebar-header {
+      color: var(--light);
+      background: linear-gradient(to right, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+    }
+    
+    .sidebar-header:hover {
+      background: linear-gradient(to right, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+    }
+    
+    .toggle-icon {
+      transition: transform 0.3s;
+      font-size: 12px;
+    }
+    
+    .sidebar-content {
+      padding: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      transition: all 0.3s ease-out;
+    }
+    
+    .sidebar-content.collapsed {
+      max-height: 0;
+      padding: 0 20px;
+      overflow: hidden;
+    }
+    
+    .main-area {
+      flex: 1;
+      margin-top: 64px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .viewport-controls {
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s;
+    }
+    
+    body[data-theme="dark"] .viewport-controls {
+      background: rgba(17, 24, 39, 0.95);
+      border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+    }
+    
+    .viewport-buttons {
+      display: flex;
+      gap: 8px;
+      background: rgba(243, 244, 246, 0.5);
+      padding: 4px;
+      border-radius: 10px;
+    }
+    
+    body[data-theme="dark"] .viewport-buttons {
+      background: rgba(55, 65, 81, 0.5);
+    }
+    
+    .viewport-btn {
       padding: 8px 16px;
-      margin: 0;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.3s;
     }
     
-    .editor-content {
+    .viewport-btn.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    body[data-theme="dark"] .viewport-btn.active {
+      background: var(--dark);
+    }
+    
+    .canvas-container {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
-      position: relative;
+      padding: 24px;
       overflow: auto;
+      position: relative;
+    }
+    
+    .canvas-wrapper {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 100%;
+      max-width: 1200px;
+      height: 85vh;
+      overflow: hidden;
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    body[data-theme="dark"] .canvas-wrapper {
+      background: #1f2937;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .canvas-wrapper.tablet {
+      max-width: 768px;
+    }
+    
+    .canvas-wrapper.mobile {
+      max-width: 375px;
+    }
+    
+    .canvas {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+      border-radius: 12px;
+    }
+    
+    body[data-theme="dark"] .canvas {
+      background: #1f2937;
     }
     
     .drop-zone {
       width: 100%;
       height: 100%;
-      border: 2px dashed #ccc;
-      border-radius: 8px;
+      border: 3px dashed rgba(139, 92, 246, 0.3);
+      border-radius: 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: white;
       transition: all 0.3s;
+      text-align: center;
+      padding: 48px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.02) 0%, rgba(236, 72, 153, 0.02) 100%);
+    }
+    
+    body[data-theme="dark"] .drop-zone {
+      border-color: rgba(139, 92, 246, 0.5);
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%);
     }
     
     .drop-zone.active {
       border-color: var(--primary);
-      background: #f0f0ff;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+      transform: scale(0.98);
     }
     
-    .drop-icon {
-      font-size: 3rem;
-      color: #ccc;
-      margin-bottom: 1rem;
+    .drop-zone h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     
-    .drop-text {
-      text-align: center;
+    .drop-zone p {
+      color: var(--text-muted);
+      margin-bottom: 24px;
       max-width: 400px;
     }
     
-    .drop-text h3 {
-      margin-bottom: 0.5rem;
-      color: var(--dark);
-    }
-    
-    .drop-text p {
-      color: #666;
-      line-height: 1.5;
-    }
-    
-    #iframeWrapper {
-      width: 100%;
-      height: 100%;
-      display: none;
+    .right-panel {
+      width: 360px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(229, 231, 235, 0.5);
+      margin-top: 64px;
+      overflow-y: auto;
+      height: calc(100vh - 64px);
       position: relative;
+      z-index: 100;
+      box-shadow: -4px 0 6px -1px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s;
     }
     
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: white;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      border-radius: 8px;
+    body[data-theme="dark"] .right-panel {
+      background: rgba(17, 24, 39, 0.95);
+      border-left: 1px solid rgba(55, 65, 81, 0.5);
     }
     
-    .selected {
-      outline: 3px solid var(--accent) !important;
-      outline-offset: 2px;
+    .property-section {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+      animation: slideInRight 0.3s ease-out;
     }
     
-    .draggable {
-      cursor: move;
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
     
-    #selectedInfo {
-      font-size: 0.85rem;
-      margin-bottom: 0.5rem;
-      color: #666;
-      background: #f0f0f0;
-      padding: 8px;
-      border-radius: 4px;
-    }
-    
-    .template-preview {
-      display: none;
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: white;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 5;
-      max-width: 300px;
-    }
-    
-    .template-preview h4 {
-      margin-bottom: 0.5rem;
+    .property-title {
+      font-weight: 600;
+      margin-bottom: 16px;
       color: var(--dark);
+      font-size: 15px;
     }
     
-    .template-preview img {
-      max-width: 100%;
-      border-radius: 4px;
+    body[data-theme="dark"] .property-title {
+      color: var(--light);
     }
     
-    .font-preview {
+    .property-group {
+      margin-bottom: 16px;
+    }
+    
+    .property-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: block;
+      font-weight: 500;
+    }
+    
+    .property-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
       font-size: 14px;
-      margin-top: 5px;
-      color: #666;
+      transition: all 0.3s;
+      background: white;
+      color: var(--text);
     }
     
-    .color-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 1rem;
+    body[data-theme="dark"] .property-input {
+      background: #1f2937;
+      border-color: var(--border);
+      color: var(--light);
     }
     
-    .color-option {
-      height: 30px;
-      border-radius: 4px;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: transform 0.2s;
+    .property-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
     }
     
-    .color-option:hover {
-      transform: scale(1.05);
-    }
-    
-    .color-option.active {
-      border-color: var(--dark);
-    }
-    
-    .tooltip {
-      position: relative;
-      display: inline-block;
-    }
-    
-    .tooltip .tooltiptext {
-      visibility: hidden;
-      width: 120px;
-      background-color: #555;
-      color: #fff;
-      text-align: center;
-      border-radius: 6px;
-      padding: 5px;
-      position: absolute;
-      z-index: 1;
-      bottom: 125%;
-      left: 50%;
-      margin-left: -60px;
-      opacity: 0;
-      transition: opacity 0.3s;
+    .element-inspector {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: linear-gradient(to bottom, #f9fafb, #ffffff);
+      font-family: 'Monaco', 'Consolas', monospace;
       font-size: 12px;
     }
     
-    .tooltip:hover .tooltiptext {
-      visibility: visible;
-      opacity: 1;
+    body[data-theme="dark"] .element-inspector {
+      background: linear-gradient(to bottom, #111827, #1f2937);
     }
     
-    .status {
-      display: inline-block;
-      padding: 6px 8px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      background: #f0f0f0;
-      color: #666;
+    .element-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
     }
     
-    .status.save {
-      background: var(--success);
+    body[data-theme="dark"] .element-item {
+      border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+    }
+    
+    .element-item:hover {
+      background: linear-gradient(to right, rgba(139, 92, 246, 0.05), rgba(236, 72, 153, 0.05));
+      padding-left: 18px;
+    }
+    
+    .element-item.selected {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
       color: white;
     }
     
-    .history-controls {
-      display: flex;
-      gap: 8px;
+    .element-item.editable {
+      border-left: 3px solid var(--accent);
     }
     
-    .history-controls button {
-      width: auto;
-      flex: 1;
-    }
-    
-    /* Notifications */
     .notification {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 15px 20px;
-      border-radius: 6px;
+      top: 84px;
+      right: 24px;
+      padding: 14px 20px;
+      border-radius: 10px;
       color: white;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 2000;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
       transform: translateX(150%);
-      transition: transform 0.3s ease;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     
     .notification.show {
       transform: translateX(0);
     }
     
-    .notification.success {
-      background: var(--success);
+    .notification.success { 
+      background: linear-gradient(135deg, var(--success), #059669);
+    }
+    .notification.error { 
+      background: linear-gradient(135deg, var(--error), #dc2626);
+    }
+    .notification.warning { 
+      background: linear-gradient(135deg, var(--warning), #d97706);
     }
     
-    .notification.error {
-      background: var(--error);
-    }
-    
-    .notification.warning {
-      background: var(--warning);
-    }
-    
-    /* Sidebar toggle */
-    .sidebar-toggle {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 20;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    }
-    
-    /* Loading indicator */
-    .loading {
+    .notification::before {
+      content: '';
       position: absolute;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255,255,255,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 30;
-      display: none;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      animation: shimmer 2s infinite;
     }
     
-    .spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid rgba(106, 63, 181, 0.2);
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .class-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    
+    .class-item {
+      background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-family: 'Monaco', 'Consolas', monospace;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    body[data-theme="dark"] .class-item {
+      background: linear-gradient(135deg, #374151, #4b5563);
+      border-color: var(--border);
+    }
+    
+    .class-item.tailwind {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+      border-color: rgba(139, 92, 246, 0.3);
+      color: var(--primary-dark);
+    }
+    
+    body[data-theme="dark"] .class-item.tailwind {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+      color: var(--primary-light);
+    }
+    
+    .class-item:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .class-item.tailwind:hover {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+      border-color: var(--primary);
+    }
+    
+    /* Loading animation */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
-      border-top-color: var(--primary);
-      animation: spin 1s linear infinite;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
     }
     
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      to { transform: rotate(360deg); }
     }
     
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+    }
+    
+    body[data-theme="dark"] ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, var(--primary-dark), var(--accent-dark));
+    }
+    
+    /* Search bar */
+    .search-container {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    
+    .search-input {
       width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal-content {
+      padding: 10px 36px 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
       background: white;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 600px;
-      max-height: 80vh;
-      overflow-y: auto;
-      padding: 2rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
-    }
-    
-    .modal-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-      color: var(--dark);
-    }
-    
-    .close-modal {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: #666;
-      width: auto;
-      padding: 0;
-    }
-    
-    .modal-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    
-    .module-card {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem;
-      text-align: center;
-      cursor: pointer;
+      color: var(--text);
       transition: all 0.3s;
     }
     
-    .module-card:hover {
+    body[data-theme="dark"] .search-input {
+      background: #1f2937;
+      border-color: var(--border);
+      color: var(--light);
+    }
+    
+    .search-input:focus {
+      outline: none;
       border-color: var(--primary);
-      transform: translateY(-5px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
     }
     
-    .module-icon {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-    
-    .module-name {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-    
-    .module-desc {
-      font-size: 0.8rem;
-      color: #666;
-    }
-    
-    /* Menu contextuel */
-    .context-menu {
+    .search-icon {
       position: absolute;
-      background: white;
-      border-radius: 6px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-      z-index: 1000;
-      display: none;
-      min-width: 150px;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
     }
     
-    .context-menu ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    
-    .context-menu li {
-      padding: 10px 15px;
-      cursor: pointer;
-      border-bottom: 1px solid var(--border);
-    }
-    
-    .context-menu li:last-child {
-      border-bottom: none;
-    }
-    
-    .context-menu li:hover {
-      background: #f5f5f5;
-    }
-    
-    /* Gestionnaire d'images */
-    .image-manager {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 10px;
-      margin-top: 1rem;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-    
-    .image-item {
-      position: relative;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      overflow: hidden;
-      cursor: pointer;
-    }
-    
-    .image-item img {
-      width: 100%;
-      height: 80px;
-      object-fit: cover;
-    }
-    
-    .image-item.active {
-      border-color: var(--primary);
-    }
-    
-    .image-item .delete {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: rgba(0,0,0,0.5);
-      color: white;
+    /* Theme toggle */
+    .theme-toggle {
+      background: none;
       border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 8px;
       border-radius: 50%;
-      width: 20px;
-      height: 20px;
+      transition: all 0.3s;
+      color: var(--text);
+    }
+    
+    .theme-toggle:hover {
+      background: rgba(139, 92, 246, 0.1);
+    }
+    
+    /* Auto-save indicator */
+    .auto-save-indicator {
+      font-size: 12px;
+      color: var(--text-muted);
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      cursor: pointer;
+      gap: 6px;
     }
     
-    /* Responsive */
-    @media (max-width: 768px) {
-      body {
-        flex-direction: column;
-        height: auto;
-        overflow: auto;
-      }
-      
-      #sidebar {
-        width: 100%;
-        height: auto;
-        max-height: 50vh;
-      }
-      
-      #editor {
-        height: 50vh;
-      }
-      
-      .sidebar-toggle {
-        display: none;
-      }
+    .saving {
+      animation: pulse 1s infinite;
+    }
+    
+    /* Preview classes */
+    .preview-classes {
+      background: rgba(139, 92, 246, 0.05);
+      border: 1px dashed rgba(139, 92, 246, 0.3);
+      border-radius: 6px;
+      padding: 8px;
+      margin-top: 8px;
+      font-size: 12px;
+      font-family: monospace;
+      max-height: 100px;
+      overflow-y: auto;
     }
   </style>
 </head>
-<body>
-  <div id="sidebar">
-    <div class="logo">
-      <div class="logo-icon">SP</div>
-      <div class="logo-text">SimplePlate</div>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">
-        <i>📁</i> Chargement du template
+<body data-theme="light">
+  <!-- Écran de chargement -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <span>SP</span>
       </div>
-      <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">
-        Glissez votre fichier HTML dans la zone d'édition à droite pour commencer.
-      </p>
-      <button id="loadDemoBtn" class="btn-secondary">Charger un exemple de template</button>
-      <button id="loadFilesBtn" class="btn-outline">Charger HTML + CSS</button>
-      <button id="restoreSessionBtn" class="btn-outline">Restaurer session</button>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">
-        <i>➕</i> Ajouter des éléments
+      <h1 class="loading-text">SimplePlate</h1>
+      <p class="loading-subtext">Éditeur de templates professionnel</p>
+      <div class="loading-progress">
+        <div class="loading-progress-bar"></div>
       </div>
-      <button id="addModuleBtn" class="btn-secondary">Ajouter un module</button>
-      <button id="imageManagerBtn" class="btn-outline">Gestionnaire d'images</button>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">
-        <i>🔍</i> Optimisation SEO
-      </div>
-      <label for="seoTitle">Titre de la page</label>
-      <input type="text" id="seoTitle" placeholder="Titre optimisé pour le référencement">
-      
-      <label for="seoDesc">Description meta</label>
-      <textarea id="seoDesc" rows="3" placeholder="Description pour les moteurs de recherche"></textarea>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">
-        <i>🎨</i> Personnalisation des couleurs
-      </div>
-      
-      <label>Couleur principale</label>
-      <div class="color-picker-container">
-        <div class="color-picker">
-          <input type="color" id="colorPrimary" value="#6a3fb5">
-        </div>
-        <div class="color-picker">
-          <input type="color" id="colorText" value="#333333">
-        </div>
-        <div class="color-picker">
-          <input type="color" id="colorBackground" value="#ffffff">
-        </div>
-      </div>
-      
-      <label>Palettes de couleurs prédéfinies</label>
-      <div class="color-grid">
-        <div class="color-option active" style="background: linear-gradient(135deg, #6a3fb5, #ff7a59);" data-primary="#6a3fb5" data-accent="#ff7a59"></div>
-        <div class="color-option" style="background: linear-gradient(135deg, #2E86AB, #A23B72);" data-primary="#2E86AB" data-accent="#A23B72"></div>
-        <div class="color-option" style="background: linear-gradient(135deg, #F18F01, #C73E1D);" data-primary="#F18F01" data-accent="#C73E1D"></div>
-        <div class="color-option" style="background: linear-gradient(135deg, #3DCCC7, #FF6B6B);" data-primary="#3DCCC7" data-accent="#FF6B6B"></div>
-        <div class="color-option" style="background: linear-gradient(135deg, #5D5FEF, #FF9E64);" data-primary="#5D5FEF" data-accent="#FF9E64"></div>
-        <div class="color-option" style="background: linear-gradient(135deg, #2A9D8F, #E9C46A);" data-primary="#2A9D8F" data-accent="#E9C46A"></div>
-      </div>
-      
-      <label for="colorAccent">Couleur d'accent</label>
-      <input type="color" id="colorAccent" value="#ff7a59">
-    </div>
-    
-    <div class="section">
-      <div class="section-title">
-        <i>🔤</i> Typographie
-      </div>
-      <label for="fontSelect">Police de caractères</label>
-      <select id="fontSelect">
-        <option value="Arial, sans-serif">Arial</option>
-        <option value="'Roboto', sans-serif">Roboto</option>
-        <option value="'Poppins', sans-serif">Poppins</option>
-        <option value="'Open Sans', sans-serif">Open Sans</option>
-        <option value="'Lato', sans-serif">Lato</option>
-        <option value="'Montserrat', sans-serif">Montserrat</option>
-        <option value="'Raleway', sans-serif">Raleway</option>
-        <option value="'Playfair Display', serif">Playfair Display</option>
-        <option value="'Merriweather', serif">Merriweather</option>
-        <option value="'Source Sans Pro', sans-serif">Source Sans Pro</option>
-        <option value="'Oswald', sans-serif">Oswald</option>
-        <option value="'Nunito', sans-serif">Nunito</option>
-        <option value="'Quicksand', sans-serif">Quicksand</option>
-        <option value="'Rubik', sans-serif">Rubik</option>
-        <option value="'Work Sans', sans-serif">Work Sans</option>
-      </select>
-      <div class="font-preview" id="fontPreview">AaBbCc - Exemple de texte avec cette police</div>
-      
-      <label for="fontSize">Taille de police (px)</label>
-      <input type="range" id="fontSize" min="12" max="32" value="16">
-      <div class="range-value" id="fontSizeValue">16px</div>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">
-        <i>🖼️</i> Gestion des images
-      </div>
-      <div id="selectedInfo">Aucune image sélectionnée</div>
-      
-      <div class="tooltip">
-        <button id="replaceImageBtn">Remplacer l'image sélectionnée</button>
-        <span class="tooltiptext">Cliquez d'abord sur une image dans l'éditeur</span>
-      </div>
-      
-      <input type="file" id="imageUploader" style="display:none" accept="image/*">
-      
-      <label for="imgWidth">Largeur de l'image: <span id="widthValue">100%</span></label>
-      <input type="range" id="imgWidth" min="10" max="100" value="100">
-      
-      <button id="enableDragBtn" class="btn-outline">Activer le déplacement des images</button>
-      <button id="resetPositionBtn" class="btn-outline">Réinitialiser la position</button>
-    </div>
-    
-    <div class="section">
-      <div class="section-title">
-        <i>💾</i> Exportation
-      </div>
-      <button id="downloadBtn" class="btn-secondary">Télécharger le template modifié</button>
-      <button id="exportZipBtn" class="btn-secondary">Exporter en ZIP</button>
-      
-      <div class="history-controls">
-        <button id="undoBtn" class="btn-outline">Undo (Ctrl+Z)</button>
-        <button id="redoBtn" class="btn-outline">Redo (Ctrl+Y)</button>
-      </div>
-      
-      <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
-        <div id="autosaveStatus" class="status">Autosave: off</div>
-        <button id="toggleAutosave" class="btn-outline">Activer autosave</button>
+      <div class="loading-recommendation">
+        <span class="loading-icon">💻</span>
+        <span>Pour une meilleure expérience, nous recommandons d'utiliser SimplePlate sur ordinateur</span>
       </div>
     </div>
   </div>
-
-  <div id="editor">
-    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
-    <div class="loading" id="loadingIndicator">
-      <div class="spinner"></div>
-    </div>
-    
-    <div class="editor-header">
-      <div class="editor-title">Éditeur de template SimplePlate</div>
-      <div class="editor-actions">
-        <button id="resetBtn">Réinitialiser</button>
-        <button id="helpBtn">Aide</button>
+  
+  <!-- Application principale -->
+  <div class="app-container" id="appContainer">
+    <!-- Toolbar supérieure -->
+    <div class="top-toolbar">
+      <div class="logo">
+        <div class="logo-icon">SP</div>
+        <div class="logo-text">SimplePlate Pro</div>
+      </div>
+      
+      <div class="toolbar-actions">
+        <button class="theme-toggle" id="themeToggle" title="Changer le thème">
+          🌙
+        </button>
+        <button class="btn btn-outline" id="undoBtn" disabled>
+          <span>↶</span> Annuler
+        </button>
+        <button class="btn btn-outline" id="redoBtn" disabled>
+          <span>↷</span> Rétablir
+        </button>
+        <button class="btn btn-secondary" id="previewBtn">
+          <span>👁️</span> Aperçu
+        </button>
+        <button class="btn btn-primary" id="exportBtn">
+          <span>💾</span> Exporter
+        </button>
       </div>
     </div>
     
-    <div class="editor-content">
-      <div class="drop-zone" id="dropZone">
-        <div class="drop-icon">📄</div>
-        <div class="drop-text">
-          <h3>Déposez votre fichier HTML ici</h3>
-          <p>Glissez-déposez votre fichier HTML dans cette zone pour commencer l'édition. Vous pourrez ensuite personnaliser les couleurs, polices, images et le SEO.</p>
-          <p style="margin-top: 10px; font-size: 0.9rem; color: var(--primary);">Ou utilisez le bouton "Charger HTML + CSS" pour importer des fichiers séparés.</p>
+    <!-- Sidebar gauche -->
+    <div class="left-sidebar">
+      <!-- Section Import -->
+      <div class="sidebar-section">
+        <div class="sidebar-header" data-section="import">
+          <span>📥 Importer template</span>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div class="sidebar-content">
+          <div class="property-group">
+            <button class="btn btn-primary" id="uploadHtmlBtn" style="width: 100%; margin-bottom: 10px;">
+              <span>📁</span> Choisir fichier HTML
+            </button>
+            <input type="file" id="htmlUpload" accept=".html,.htm" style="display: none;">
+          </div>
+          
+          <div class="property-group">
+            <label class="property-label">Ou coller votre code HTML :</label>
+            <textarea id="htmlCodeInput" class="property-input" rows="4" placeholder="Collez votre code HTML ici..."></textarea>
+            <button class="btn btn-secondary" id="loadFromCodeBtn" style="width: 100%; margin-top: 8px;">
+              <span>⚡</span> Charger le template
+            </button>
+          </div>
+          
+          <div class="property-group">
+            <button class="btn btn-outline" id="loadExampleBtn" style="width: 100%;">
+              <span>🎨</span> Charger un exemple
+            </button>
+          </div>
         </div>
       </div>
       
-      <div id="iframeWrapper">
-        <iframe id="previewFrame"></iframe>
+      <!-- Section Éléments -->
+      <div class="sidebar-section">
+        <div class="sidebar-header" data-section="elements">
+          <span>🏗️ Structure du template</span>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div class="sidebar-content">
+          <div class="search-container">
+            <input type="text" id="elementSearch" class="search-input" placeholder="Rechercher un élément...">
+            <span class="search-icon">🔍</span>
+          </div>
+          <div id="elementInspector" class="element-inspector">
+            <div style="padding: 24px; text-align: center; color: var(--text-muted);">
+              <div style="font-size: 32px; margin-bottom: 12px;">📦</div>
+              Chargez un template pour voir sa structure
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Section Tailwind -->
+      <div class="sidebar-section">
+        <div class="sidebar-header" data-section="tailwind">
+          <span>⚡ Classes Tailwind rapides</span>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div class="sidebar-content">
+          <div class="property-group">
+            <label class="property-label">🎨 Couleurs de fond</label>
+            <div class="class-list">
+              <span class="class-item tailwind" data-class="bg-white">bg-white</span>
+              <span class="class-item tailwind" data-class="bg-gray-50">bg-gray-50</span>
+              <span class="class-item tailwind" data-class="bg-gray-900">bg-gray-900</span>
+              <span class="class-item tailwind" data-class="bg-blue-500">bg-blue-500</span>
+              <span class="class-item tailwind" data-class="bg-red-500">bg-red-500</span>
+              <span class="class-item tailwind" data-class="bg-green-500">bg-green-500</span>
+              <span class="class-item tailwind" data-class="bg-purple-500">bg-purple-500</span>
+              <span class="class-item tailwind" data-class="bg-gradient-to-r">bg-gradient-to-r</span>
+            </div>
+          </div>
+          
+          <div class="property-group">
+            <label class="property-label">✏️ Couleurs de texte</label>
+            <div class="class-list">
+              <span class="class-item tailwind" data-class="text-black">text-black</span>
+              <span class="class-item tailwind" data-class="text-white">text-white</span>
+              <span class="class-item tailwind" data-class="text-gray-600">text-gray-600</span>
+              <span class="class-item tailwind" data-class="text-blue-600">text-blue-600</span>
+              <span class="class-item tailwind" data-class="text-red-600">text-red-600</span>
+            </div>
+          </div>
+          
+          <div class="property-group">
+            <label class="property-label">📐 Espacement</label>
+            <div class="class-list">
+              <span class="class-item tailwind" data-class="p-2">p-2</span>
+              <span class="class-item tailwind" data-class="p-4">p-4</span>
+              <span class="class-item tailwind" data-class="p-8">p-8</span>
+              <span class="class-item tailwind" data-class="px-4">px-4</span>
+              <span class="class-item tailwind" data-class="py-4">py-4</span>
+              <span class="class-item tailwind" data-class="m-4">m-4</span>
+              <span class="class-item tailwind" data-class="mx-auto">mx-auto</span>
+              <span class="class-item tailwind" data-class="mb-4">mb-4</span>
+              <span class="class-item tailwind" data-class="mt-8">mt-8</span>
+              <span class="class-item tailwind" data-class="space-x-4">space-x-4</span>
+            </div>
+          </div>
+          
+          <div class="property-group">
+            <label class="property-label">📝 Typographie</label>
+            <div class="class-list">
+              <span class="class-item tailwind" data-class="text-xs">text-xs</span>
+              <span class="class-item tailwind" data-class="text-sm">text-sm</span>
+              <span class="class-item tailwind" data-class="text-base">text-base</span>
+              <span class="class-item tailwind" data-class="text-lg">text-lg</span>
+              <span class="class-item tailwind" data-class="text-xl">text-xl</span>
+              <span class="class-item tailwind" data-class="text-2xl">text-2xl</span>
+              <span class="class-item tailwind" data-class="text-3xl">text-3xl</span>
+              <span class="class-item tailwind" data-class="font-bold">font-bold</span>
+              <span class="class-item tailwind" data-class="font-light">font-light</span>
+            </div>
+          </div>
+          
+          <div class="property-group">
+            <label class="property-label">🎭 Effets & Animation</label>
+            <div class="class-list">
+              <span class="class-item tailwind" data-class="shadow-lg">shadow-lg</span>
+              <span class="class-item tailwind" data-class="rounded-lg">rounded-lg</span>
+              <span class="class-item tailwind" data-class="hover:scale-105">hover:scale-105</span>
+              <span class="class-item tailwind" data-class="transition-all">transition-all</span>
+              <span class="class-item tailwind" data-class="duration-300">duration-300</span>
+              <span class="class-item tailwind" data-class="animate-pulse">animate-pulse</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- Menu contextuel -->
-  <div class="context-menu" id="contextMenu">
-    <ul>
-      <li id="editText">Modifier le texte</li>
-      <li id="changeImage">Changer l'image</li>
-      <li id="deleteElement">Supprimer l'élément</li>
-      <li id="duplicateElement">Dupliquer l'élément</li>
-    </ul>
-  </div>
-
-  <!-- Modal pour ajouter des modules -->
-  <div class="modal" id="moduleModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">Ajouter un module</div>
-        <button class="close-modal" id="closeModuleModal">&times;</button>
+    
+    <!-- Zone principale -->
+    <div class="main-area">
+      <!-- Contrôles de viewport -->
+      <div class="viewport-controls">
+        <div class="viewport-buttons">
+          <button class="viewport-btn active" data-viewport="desktop">🖥️ Desktop</button>
+          <button class="viewport-btn" data-viewport="tablet">📱 Tablet</button>
+          <button class="viewport-btn" data-viewport="mobile">📱 Mobile</button>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span id="elementPath" style="font-size: 12px; color: var(--text-muted); font-family: monospace;"></span>
+          <span class="auto-save-indicator" id="autoSaveIndicator">
+            <span class="saving" style="display: none;">⏳</span>
+            <span id="saveStatus">Sauvegardé</span>
+          </span>
+        </div>
       </div>
-      <p>Sélectionnez un module à ajouter à votre template :</p>
-      <div class="modal-grid">
-        <div class="module-card" data-module="hero">
-          <div class="module-icon">🚀</div>
-          <div class="module-name">Section Hero</div>
-          <div class="module-desc">Section d'accueil avec titre et bouton</div>
-        </div>
-        <div class="module-card" data-module="features">
-          <div class="module-icon">⭐</div>
-          <div class="module-name">Section Fonctionnalités</div>
-          <div class="module-desc">Présentation de vos services</div>
-        </div>
-        <div class="module-card" data-module="gallery">
-          <div class="module-icon">🖼️</div>
-          <div class="module-name">Galerie d'images</div>
-          <div class="module-desc">Grille d'images responsives</div>
-        </div>
-        <div class="module-card" data-module="contact">
-          <div class="module-icon">📞</div>
-          <div class="module-name">Formulaire de contact</div>
-          <div class="module-desc">Formulaire avec validation</div>
-        </div>
-        <div class="module-card" data-module="team">
-          <div class="module-icon">👥</div>
-          <div class="module-name">Équipe</div>
-          <div class="module-desc">Présentation des membres</div>
-        </div>
-        <div class="module-card" data-module="testimonials">
-          <div class="module-icon">💬</div>
-          <div class="module-name">Témoignages</div>
-          <div class="module-desc">Avis de vos clients</div>
+      
+      <!-- Container du canvas -->
+      <div class="canvas-container">
+        <div class="canvas-wrapper" id="canvasWrapper">
+          <div class="drop-zone" id="dropZone">
+            <h3>🚀 Importez votre template HTML</h3>
+            <p>Glissez-déposez votre fichier HTML ici, ou utilisez les boutons de la sidebar pour importer votre template avec Tailwind CSS.</p>
+            <div style="margin-top: 24px;">
+              <button class="btn btn-primary" onclick="document.getElementById('htmlUpload').click()">
+                <span>📁</span> Choisir un fichier
+              </button>
+            </div>
+          </div>
+          
+          <iframe class="canvas" id="templateFrame" style="display: none;"></iframe>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Modal pour le gestionnaire d'images -->
-  <div class="modal" id="imageManagerModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">Gestionnaire d'images</div>
-        <button class="close-modal" id="closeImageManagerModal">&times;</button>
+    
+    <!-- Panneau de propriétés à droite -->
+    <div class="right-panel">
+      <div class="property-section">
+        <div class="property-title">🎯 Élément sélectionné</div>
+        <div id="elementInfo">
+          <p style="color: var(--text-muted); text-align: center; margin-top: 24px;">
+            <span style="font-size: 32px;">👆</span><br>
+            Cliquez sur un élément dans le template pour le modifier
+          </p>
+        </div>
       </div>
-      <p>Ajoutez et gérez vos images :</p>
-      <input type="file" id="bulkImageUpload" multiple accept="image/*" style="margin: 10px 0;">
-      <div class="image-manager" id="imageManager">
-        <!-- Les images seront ajoutées ici dynamiquement -->
+      
+      <div class="property-section">
+        <div class="property-title">🎨 Classes CSS</div>
+        <div class="property-group">
+          <label class="property-label">Classes actuelles</label>
+          <textarea id="classEditor" class="property-input" rows="3" placeholder="Pas d'élément sélectionné"></textarea>
+          <div id="classPreview" class="preview-classes" style="display: none;">
+            Aperçu des classes...
+          </div>
+          <button class="btn btn-primary" id="updateClassesBtn" style="width: 100%; margin-top: 8px;">
+            <span>✏️</span> Mettre à jour les classes
+          </button>
+        </div>
+        
+        <div class="property-group">
+          <label class="property-label">Classes de l'élément</label>
+          <div id="currentClasses" class="class-list">
+            <!-- Classes seront affichées ici -->
+          </div>
+        </div>
       </div>
-      <button id="insertSelectedImage" class="btn-secondary" style="margin-top: 15px;">Insérer l'image sélectionnée</button>
+      
+      <div class="property-section">
+        <div class="property-title">📝 Contenu</div>
+        <div class="property-group">
+          <label class="property-label">Texte de l'élément</label>
+          <textarea id="textEditor" class="property-input" rows="3" placeholder="Pas d'élément sélectionné"></textarea>
+          <button class="btn btn-primary" id="updateTextBtn" style="width: 100%; margin-top: 8px;">
+            <span>💬</span> Mettre à jour le texte
+          </button>
+        </div>
+      </div>
+      
+      <div class="property-section">
+        <div class="property-title">⚡ Actions rapides</div>
+        <div class="property-group">
+          <button class="btn btn-secondary" id="quickEditBtn" style="width: 100%; margin-bottom: 8px;">
+            <span>✨</span> Édition rapide (ou double-clic)
+          </button>
+          <button class="btn btn-outline" id="duplicateBtn" style="width: 100%; margin-bottom: 8px;">
+            <span>📋</span> Dupliquer l'élément
+          </button>
+          <button class="btn btn-outline" id="deleteBtn" style="width: 100%; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none;">
+            <span>🗑️</span> Supprimer l'élément
+          </button>
+        </div>
+      </div>
     </div>
+    
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
   </div>
-
-  <!-- Modal pour charger HTML + CSS -->
-  <div class="modal" id="filesModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">Charger HTML + CSS</div>
-        <button class="close-modal" id="closeFilesModal">&times;</button>
-      </div>
-      <p>Choisissez vos fichiers HTML et CSS :</p>
-      <div style="margin: 15px 0;">
-        <label for="htmlFile">Fichier HTML :</label>
-        <input type="file" id="htmlFile" accept=".html">
-      </div>
-      <div style="margin: 15px 0;">
-        <label for="cssFile">Fichier CSS (optionnel) :</label>
-        <input type="file" id="cssFile" accept=".css">
-      </div>
-      <button id="loadFiles" class="btn-secondary">Charger les fichiers</button>
-    </div>
-  </div>
-
-  <div id="notification" class="notification"></div>
 
   <script>
     // Variables globales
-    const previewFrame = document.getElementById('previewFrame');
-    const iframeWrapper = document.getElementById('iframeWrapper');
-    const dropZone = document.getElementById('dropZone');
-    const loadingIndicator = document.getElementById('loadingIndicator');
-    const notification = document.getElementById('notification');
-    const contextMenu = document.getElementById('contextMenu');
-    let iframeDoc = null;
-    let selectedEl = null;
-    let selectedImage = null;
-    let dragEnabled = false;
-    let isDragging = false;
-    let autosave = false;
+    let templateFrame = document.getElementById('templateFrame');
+    let dropZone = document.getElementById('dropZone');
+    let selectedElement = null;
+    let templateDoc = null;
     let history = [];
     let redoStack = [];
-    const MAX_HISTORY = 60;
-    let autosaveTimer = null;
-    let isInitializing = false;
-    let imageLibrary = [];
-
-    // Fonction pour afficher des notifications
-    function showNotification(message, type = 'success', duration = 3000) {
-      notification.textContent = message;
+    let maxHistorySize = 50;
+    let autoSaveTimer = null;
+    let isAutoSaving = false;
+    
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+      // Cacher l'écran de chargement après 2.5 secondes
+      setTimeout(() => {
+        const loadingScreen = document.getElementById('loadingScreen');
+        const appContainer = document.getElementById('appContainer');
+        
+        loadingScreen.classList.add('fade-out');
+        appContainer.classList.add('show');
+        
+        setTimeout(() => {
+          loadingScreen.style.display = 'none';
+        }, 500);
+        
+        // Charger le thème sauvegardé
+        const savedTheme = localStorage.getItem('simpleplate-theme') || 'light';
+        document.body.setAttribute('data-theme', savedTheme);
+        updateThemeToggleIcon();
+        
+        // Charger le dernier template s'il existe
+        const savedTemplate = localStorage.getItem('simpleplate-template');
+        if (savedTemplate) {
+          setTimeout(() => {
+            loadTemplate(savedTemplate);
+            showNotification('Template précédent chargé automatiquement', 'success');
+          }, 300);
+        }
+        
+        // Initialiser les écouteurs d'événements
+        initEventListeners();
+        showNotification('SimplePlate Pro chargé avec succès ! 🚀', 'success');
+      }, 2500);
+    });
+    
+    // Initialiser tous les écouteurs d'événements
+    function initEventListeners() {
+      // Thème
+      document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+      
+      // Historique
+      document.getElementById('undoBtn').addEventListener('click', undo);
+      document.getElementById('redoBtn').addEventListener('click', redo);
+      
+      // Import/Export
+      document.getElementById('uploadHtmlBtn').addEventListener('click', () => {
+        document.getElementById('htmlUpload').click();
+      });
+      
+      document.getElementById('htmlUpload').addEventListener('change', handleFileUpload);
+      document.getElementById('loadFromCodeBtn').addEventListener('click', loadFromCode);
+      document.getElementById('loadExampleBtn').addEventListener('click', loadExample);
+      
+      // Édition
+      document.getElementById('updateClassesBtn').addEventListener('click', updateClasses);
+      document.getElementById('updateTextBtn').addEventListener('click', updateText);
+      document.getElementById('quickEditBtn').addEventListener('click', quickEdit);
+      document.getElementById('duplicateBtn').addEventListener('click', duplicateElement);
+      document.getElementById('deleteBtn').addEventListener('click', deleteElement);
+      
+      // Prévisualisation et export
+      document.getElementById('previewBtn').addEventListener('click', previewTemplate);
+      document.getElementById('exportBtn').addEventListener('click', exportTemplate);
+      
+      // Viewport
+      document.querySelectorAll('.viewport-btn').forEach(btn => {
+        btn.addEventListener('click', changeViewport);
+      });
+      
+      // Recherche d'éléments
+      document.getElementById('elementSearch').addEventListener('input', searchElements);
+      
+      // Classes Tailwind rapides
+      document.querySelectorAll('.class-item.tailwind').forEach(item => {
+        item.addEventListener('click', addTailwindClass);
+      });
+      
+      // Aperçu des classes
+      document.getElementById('classEditor').addEventListener('input', previewClasses);
+      
+      // Drop zone
+      dropZone.addEventListener('dragover', handleDragOver);
+      dropZone.addEventListener('dragleave', handleDragLeave);
+      dropZone.addEventListener('drop', handleDrop);
+      
+      // Sections pliables
+      document.querySelectorAll('.sidebar-header').forEach(header => {
+        header.addEventListener('click', toggleSection);
+      });
+    }
+    
+    // Fonction pour afficher les notifications avec icônes
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️'
+      };
+      notification.innerHTML = `<span>${icons[type] || '📢'}</span> ${message}`;
       notification.className = `notification ${type}`;
       notification.classList.add('show');
       
       setTimeout(() => {
         notification.classList.remove('show');
-      }, duration);
+      }, 3500);
     }
-
-    // Fonction pour afficher/masquer l'indicateur de chargement
-    function setLoading(loading) {
-      loadingIndicator.style.display = loading ? 'flex' : 'none';
-    }
-
-    // Fonction pour ajouter une entrée dans l'historique
-    function pushHistory(note) {
-      try {
-        if (!iframeDoc || isInitializing) return;
-        const snapshot = iframeDoc.documentElement.outerHTML;
-        if (history.length && history[history.length-1] === snapshot) return;
-        history.push(snapshot);
-        if (history.length > MAX_HISTORY) history.shift();
-        redoStack = [];
-        updateHistoryButtons();
-      } catch(e) { console.warn(e); }
-    }
-
-    // Fonction undo
-    function undo() {
-      if (history.length < 2) return;
-      const current = history.pop();
-      redoStack.push(current);
-      const last = history[history.length-1];
-      restoreFromHTML(last);
-      updateHistoryButtons();
-      showNotification('Action annulée', 'success', 2000);
-    }
-
-    // Fonction redo
-    function redo() {
-      if (redoStack.length === 0) return;
-      const next = redoStack.pop();
-      history.push(next);
-      restoreFromHTML(next);
-      updateHistoryButtons();
-      showNotification('Action rétablie', 'success', 2000);
-    }
-
-    // Mettre à jour l'état des boutons undo/redo
-    function updateHistoryButtons() {
-      document.getElementById('undoBtn').disabled = history.length < 2;
-      document.getElementById('redoBtn').disabled = redoStack.length === 0;
-    }
-
-    // Restaurer à partir du HTML
-    function restoreFromHTML(html) {
-      if (!html) return;
-      const iframe = previewFrame;
-      iframe.contentDocument.open();
-      iframe.contentDocument.write(html);
-      iframe.contentDocument.close();
-      setupAfterLoad();
-    }
-
-    // Sauvegarder la session
-    function saveSession() {
-      if (!iframeDoc) return;
-      try {
-        localStorage.setItem('simpleplate-session', iframeDoc.documentElement.outerHTML);
-        document.getElementById('autosaveStatus').textContent = 'Autosave: on';
-      } catch(e) {
-        console.error('Erreur lors de la sauvegarde:', e);
-        showNotification('Erreur lors de la sauvegarde', 'error');
-      }
-    }
-
-    // Effacer la session
-    function clearSession() {
-      localStorage.removeItem('simpleplate-session');
-      document.getElementById('autosaveStatus').textContent = 'Autosave: off';
-    }
-
-    // Charger l'iframe avec le HTML
-    function loadIframe(html) {
-      setLoading(true);
-      iframeWrapper.style.display = 'block';
-      dropZone.style.display = 'none';
-      previewFrame.srcdoc = html;
-      previewFrame.onload = () => {
-        setupAfterLoad();
-        setLoading(false);
-      };
-    }
-
-    // Configuration après le chargement
-    function setupAfterLoad() {
-      isInitializing = true;
+    
+    // Basculer entre les thèmes clair/sombre
+    function toggleTheme() {
+      const currentTheme = document.body.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
       
+      document.body.setAttribute('data-theme', newTheme);
+      localStorage.setItem('simpleplate-theme', newTheme);
+      updateThemeToggleIcon();
+      
+      showNotification(`Thème ${newTheme === 'light' ? 'clair' : 'sombre'} activé`, 'success');
+    }
+    
+    // Mettre à jour l'icône du bouton de thème
+    function updateThemeToggleIcon() {
+      const themeToggle = document.getElementById('themeToggle');
+      const currentTheme = document.body.getAttribute('data-theme');
+      themeToggle.textContent = currentTheme === 'light' ? '🌙' : '☀️';
+    }
+    
+    // Charger un template HTML amélioré
+    function loadTemplate(htmlContent) {
       try {
-        iframeDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-        iframeDoc.body.setAttribute('data-editable', 'false');
-        attachElementListeners();
+        // Ajouter Tailwind CSS si pas présent
+        if (!htmlContent.includes('tailwindcss.com') && !htmlContent.includes('tailwind.css')) {
+          const tailwindScript = '<script src="https://cdn.tailwindcss.com"><\/script>';
+          if (htmlContent.includes('</head>')) {
+            htmlContent = htmlContent.replace('</head>', tailwindScript + '\n</head>');
+          } else {
+            htmlContent = tailwindScript + '\n' + htmlContent;
+          }
+        }
         
-        // Synchroniser les métadonnées SEO
-        document.getElementById('seoTitle').value = iframeDoc.title || '';
-        const metaDesc = iframeDoc.querySelector('meta[name="description"]');
-        document.getElementById('seoDesc').value = metaDesc ? metaDesc.content : '';
+        // Afficher l'iframe et cacher la drop zone avec animation
+        dropZone.style.display = 'none';
+        templateFrame.style.display = 'block';
         
-        pushHistory('initial load');
-        showNotification('Template chargé avec succès', 'success');
-      } catch(e) {
-        console.error('Erreur lors du chargement:', e);
+        // Utiliser srcdoc pour une meilleure compatibilité
+        templateFrame.srcdoc = htmlContent;
+        
+        // Attendre que l'iframe soit chargée
+        templateFrame.onload = function() {
+          setTimeout(() => {
+            try {
+              setupTemplateInteraction();
+              buildElementTree();
+              addToHistory();
+              autoSave();
+              showNotification('✨ Template chargé avec succès !', 'success');
+            } catch (error) {
+              console.error('Erreur lors de la configuration:', error);
+              showNotification('Template chargé (mode compatibilité)', 'warning');
+            }
+          }, 500);
+        };
+        
+      } catch (error) {
+        console.error('Erreur lors du chargement:', error);
         showNotification('Erreur lors du chargement du template', 'error');
       }
-      
-      isInitializing = false;
     }
-
-    // Attacher les écouteurs d'événements aux éléments de l'iframe
-    function attachElementListeners() {
-      if (!iframeDoc) return;
+    
+    // Configuration avancée de l'interaction avec le template - VERSION AMÉLIORÉE
+    function setupTemplateInteraction() {
+      try {
+        templateDoc = templateFrame.contentDocument || templateFrame.contentWindow.document;
+        
+        if (!templateDoc || !templateDoc.body) {
+          throw new Error('Impossible d\'accéder au document');
+        }
+        
+        // Ajouter les styles pour l'édition avec animations
+        const editStyles = document.createElement('style');
+        editStyles.textContent = `
+          .sp-editable { 
+            cursor: pointer !important; 
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          .sp-editable:hover { 
+            outline: 2px solid #8b5cf6 !important;
+            outline-offset: 3px !important;
+            filter: brightness(1.05);
+          }
+          .sp-selected { 
+            outline: 3px solid #ec4899 !important;
+            outline-offset: 3px !important;
+            background: rgba(236, 72, 153, 0.05) !important;
+            animation: pulse 2s infinite;
+          }
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+          }
+          .sp-highlight {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2)) !important;
+            animation: highlight 0.5s ease-out;
+          }
+          @keyframes highlight {
+            from { background: rgba(139, 92, 246, 0.4); }
+            to { background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2)); }
+          }
+          [contenteditable="true"] {
+            background: rgba(139, 92, 246, 0.05) !important;
+            padding: 2px 4px !important;
+            border-radius: 4px !important;
+            min-height: 20px !important;
+          }
+          [contenteditable="true"]:focus {
+            outline: 2px dashed #8b5cf6 !important;
+            outline-offset: 2px !important;
+            background: rgba(139, 92, 246, 0.1) !important;
+          }
+        `;
+        templateDoc.head.appendChild(editStyles);
+        
+        // Rendre tous les éléments interactifs avec gestion SIMPLIFIÉE et FONCTIONNELLE
+        const allElements = templateDoc.querySelectorAll('body *');
+        allElements.forEach((element, index) => {
+          if (element.tagName && 
+              !['SCRIPT', 'STYLE', 'META', 'LINK', 'TITLE', 'NOSCRIPT'].includes(element.tagName)) {
+            
+            element.classList.add('sp-editable');
+            element.dataset.spIndex = index;
+            
+            // Supprimer les anciens écouteurs et ajouter les nouveaux
+            const newElement = element.cloneNode(true);
+            element.parentNode.replaceChild(newElement, element);
+            
+            newElement.addEventListener('click', function(e) {
+              e.stopPropagation();
+              e.preventDefault();
+              selectElement(this);
+            });
+            
+            newElement.addEventListener('dblclick', function(e) {
+              e.stopPropagation();
+              e.preventDefault();
+              makeElementEditable(this);
+            });
+          }
+        });
+        
+        // Gestionnaire de clics sur le document
+        templateDoc.addEventListener('click', function(e) {
+          if (e.target === templateDoc.body || e.target === templateDoc.documentElement) {
+            clearSelection();
+          }
+        });
+        
+      } catch (error) {
+        console.error('Erreur lors de la configuration:', error);
+        showNotification('Erreur lors de la configuration de l\'édition', 'error');
+      }
+    }
+    
+    // Fonction pour rendre un élément éditable inline
+    function makeElementEditable(element) {
+      if (!element || element === templateDoc.body) return;
       
-      // Nettoyer les écouteurs existants
-      iframeDoc.querySelectorAll('*').forEach(el => {
-        el.onpointerdown = null;
-        el.ondblclick = null;
-        el.onclick = null;
-        el.oncontextmenu = null;
-      });
-
-      // Rendre les éléments textes éditables
-      const editableTags = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'SPAN', 'A', 'LI', 'BUTTON', 'DIV'];
-      iframeDoc.querySelectorAll(editableTags.join(',')).forEach(el => {
-        el.style.cursor = 'text';
-        el.ondblclick = (e) => {
-          e.stopPropagation();
-          startInlineEdit(el);
-        };
-        el.oncontextmenu = (e) => {
+      // Sauvegarder le contenu original
+      const originalContent = element.innerHTML;
+      
+      // Rendre l'élément éditable
+      element.contentEditable = true;
+      element.style.cursor = 'text';
+      element.style.outline = '2px dashed #8b5cf6';
+      element.style.outlineOffset = '2px';
+      element.focus();
+      
+      // Sélectionner tout le texte
+      const selection = templateDoc.getSelection();
+      const range = templateDoc.createRange();
+      range.selectNodeContents(element);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      
+      // Gérer la fin de l'édition
+      function finishEditing() {
+        element.contentEditable = false;
+        element.style.cursor = '';
+        element.style.outline = '';
+        
+        if (element.innerHTML !== originalContent) {
+          addToHistory();
+          autoSave();
+          showNotification('Texte modifié avec succès', 'success');
+          buildElementTree();
+        }
+        
+        // Réactiver les événements normaux
+        setTimeout(() => {
+          setupTemplateInteraction();
+        }, 100);
+      }
+      
+      // Événements pour terminer l'édition
+      element.addEventListener('blur', finishEditing, { once: true });
+      
+      element.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
-          showContextMenu(e, el);
-        };
-      });
-
-      // Gestion des images
-      iframeDoc.querySelectorAll('img').forEach(img => {
-        img.style.cursor = 'pointer';
-        img.onclick = (e) => { 
-          e.preventDefault(); 
-          e.stopPropagation(); 
-          selectImage(img); 
-        };
-        img.oncontextmenu = (e) => {
+          element.blur();
+        }
+        if (e.key === 'Escape') {
           e.preventDefault();
-          showContextMenu(e, img);
-        };
-        makeImagePointerDraggable(img);
-      });
-
-      // Clic ailleurs pour désélectionner
-      iframeDoc.addEventListener('click', (e) => { 
-        if (e.target === iframeDoc.body) { 
-          clearSelection(); 
-        } 
-      });
-      
-      // Cacher le menu contextuel
-      iframeDoc.addEventListener('click', () => {
-        contextMenu.style.display = 'none';
-      });
-    }
-
-    // Afficher le menu contextuel
-    function showContextMenu(e, element) {
-      selectedEl = element;
-      contextMenu.style.display = 'block';
-      contextMenu.style.left = e.pageX + 'px';
-      contextMenu.style.top = e.pageY + 'px';
-      
-      // Ajuster si le menu dépasse de l'écran
-      const rect = contextMenu.getBoundingClientRect();
-      if (rect.right > window.innerWidth) {
-        contextMenu.style.left = (e.pageX - rect.width) + 'px';
-      }
-      if (rect.bottom > window.innerHeight) {
-        contextMenu.style.top = (e.pageY - rect.height) + 'px';
-      }
-    }
-
-    // Édition en ligne
-    function startInlineEdit(el) {
-      if (!iframeDoc) return;
-      clearSelection();
-      selectedEl = el;
-      el.contentEditable = 'true';
-      el.focus();
-      
-      function finish() {
-        el.contentEditable = 'false';
-        pushHistory('inline edit');
-        attachElementListeners();
-        el.removeEventListener('blur', finish);
-        el.removeEventListener('keydown', onKey);
-        if (autosave) saveSession();
-      }
-      
-      function onKey(e) {
-        if (e.key === 'Enter' && !e.shiftKey) { 
-          e.preventDefault(); 
-          el.blur(); 
+          element.innerHTML = originalContent;
+          element.blur();
         }
+      }, { once: true });
+    }
+    
+    // Sélectionner un élément avec animation - VERSION SIMPLIFIÉE ET FONCTIONNELLE
+    function selectElement(element) {
+      if (selectedElement) {
+        selectedElement.classList.remove('sp-selected');
       }
       
-      el.addEventListener('blur', finish);
-      el.addEventListener('keydown', onKey);
-    }
-
-    // Rendre les images déplaçables avec les événements pointer
-    function makeImagePointerDraggable(img) {
-      if (!img.dataset.tx) img.dataset.tx = 0;
-      if (!img.dataset.ty) img.dataset.ty = 0;
-      img.style.touchAction = 'none';
+      selectedElement = element;
+      element.classList.add('sp-selected');
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       
-      img.addEventListener('pointerdown', (e) => {
-        if (!dragEnabled) return;
-        isDragging = true; 
-        img.setPointerCapture(e.pointerId);
-        const startX = e.clientX; 
-        const startY = e.clientY;
-        const startTx = parseFloat(img.dataset.tx) || 0; 
-        const startTy = parseFloat(img.dataset.ty) || 0;
-        
-        function onMove(ev) {
-          const dx = ev.clientX - startX; 
-          const dy = ev.clientY - startY;
-          img.dataset.tx = startTx + dx; 
-          img.dataset.ty = startTy + dy;
-          img.style.transform = `translate(${img.dataset.tx}px, ${img.dataset.ty}px)`;
-        }
-        
-        function onUp(ev) {
-          isDragging = false; 
-          img.releasePointerCapture(e.pointerId); 
-          document.removeEventListener('pointermove', onMove); 
-          document.removeEventListener('pointerup', onUp); 
-          pushHistory('image move'); 
-          if (autosave) saveSession(); 
-        }
-        
-        document.addEventListener('pointermove', onMove);
-        document.addEventListener('pointerup', onUp);
-      });
+      updatePropertyPanel(element);
+      updateElementPath(element);
+      highlightInTree(element);
     }
-
-    // Sélectionner une image
-    function selectImage(img) { 
-      clearSelection(); 
-      selectedImage = img; 
-      img.classList.add('selected'); 
-      document.getElementById('selectedInfo').textContent = 'Image sélectionnée ✓';
-      
-      // Synchroniser les contrôles
-      const widthVal = img.style.width && img.style.width.includes('%') ? 
-        parseInt(img.style.width) : 
-        Math.round((img.getBoundingClientRect().width / (iframeDoc.body.clientWidth || 1)) * 100);
-      document.getElementById('imgWidth').value = widthVal;
-      document.getElementById('widthValue').textContent = widthVal + '%';
-    }
-
-    // Effacer la sélection
-    function clearSelection() { 
-      if (selectedImage) { 
-        selectedImage.classList.remove('selected'); 
-        selectedImage = null; 
-        document.getElementById('selectedInfo').textContent = 'Aucune image sélectionnée'; 
+    
+    // Désélectionner
+    function clearSelection() {
+      if (selectedElement) {
+        selectedElement.classList.remove('sp-selected');
+        selectedElement = null;
+        
+        document.getElementById('elementInfo').innerHTML = `
+          <p style="color: var(--text-muted); text-align: center; margin-top: 24px;">
+            <span style="font-size: 32px;">👆</span><br>
+            Cliquez sur un élément dans le template pour le modifier
+          </p>
+        `;
+        document.getElementById('classEditor').value = '';
+        document.getElementById('textEditor').value = '';
+        document.getElementById('currentClasses').innerHTML = '';
+        document.getElementById('elementPath').textContent = '';
+        document.getElementById('classPreview').style.display = 'none';
       }
-      selectedEl = null;
     }
-
-    // Charger un exemple de template
-    document.getElementById("loadDemoBtn").addEventListener("click", () => {
-      const demoHTML = `
-        <!DOCTYPE html>
-        <html lang="fr">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Template SimplePlate</title>
-          <style>
-            :root {
-              --primary: #6a3fb5;
-              --accent: #ff7a59;
-              --text: #333333;
-              --background: #ffffff;
-            }
-            body {
-              font-family: Arial, sans-serif;
-              margin: 0;
-              padding: 0;
-              line-height: 1.6;
-              color: var(--text);
-              background: var(--background);
-            }
-            .container {
-              max-width: 1200px;
-              margin: 0 auto;
-              padding: 20px;
-            }
-            header {
-              background: var(--primary);
-              color: white;
-              padding: 1rem 0;
-              text-align: center;
-            }
-            .hero {
-              background: #f5f5f5;
-              padding: 3rem 1rem;
-              text-align: center;
-            }
-            .hero h1 {
-              color: var(--primary);
-              margin-bottom: 1rem;
-            }
-            .btn {
-              display: inline-block;
-              background: var(--accent);
-              color: white;
-              padding: 10px 20px;
-              text-decoration: none;
-              border-radius: 4px;
-              margin-top: 1rem;
-            }
-            .features {
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-              gap: 2rem;
-              padding: 3rem 1rem;
-            }
-            .feature {
-              text-align: center;
-            }
-            .feature img {
-              max-width: 100%;
-              height: 200px;
-              object-fit: cover;
-              border-radius: 8px;
-            }
-            footer {
-              background: #333;
-              color: white;
-              text-align: center;
-              padding: 2rem 0;
-            }
-          </style>
-        </head>
-        <body>
-          <header>
-            <div class="container">
-              <h1>Mon Site Web</h1>
-              <p>Un template SimplePlate personnalisable</p>
-            </div>
-          </header>
-          
-          <section class="hero">
-            <div class="container">
-              <h1>Bienvenue sur notre site</h1>
-              <p>Ceci est un exemple de template que vous pouvez modifier à votre guise.</p>
-              <a href="#" class="btn">En savoir plus</a>
-            </div>
-          </section>
-          
-          <section class="features">
-            <div class="feature">
-              <img src="https://via.placeholder.com/400x200/6a3fb5/ffffff?text=Image+1" alt="Feature 1">
-              <h3>Fonctionnalité 1</h3>
-              <p>Description de la première fonctionnalité.</p>
-            </div>
-            <div class="feature">
-              <img src="https://via.placeholder.com/400x200/ff7a59/ffffff?text=Image+2" alt="Feature 2">
-              <h3>Fonctionnalité 2</h3>
-              <p>Description de la deuxième fonctionnalité.</p>
-            </div>
-            <div class="feature">
-              <img src="https://via.placeholder.com/400x200/333333/ffffff?text=Image+3" alt="Feature 3">
-              <h3>Fonctionnalité 3</h3>
-              <p>Description de la troisième fonctionnalité.</p>
-            </div>
-          </section>
-          
-          <footer>
-            <div class="container">
-              <p>&copy; 2023 Mon Site Web. Tous droits réservés.</p>
-            </div>
-          </footer>
-        </body>
-        </html>
+    
+    // Mise à jour du panneau de propriétés amélioré
+    function updatePropertyPanel(element) {
+      const info = document.getElementById('elementInfo');
+      const classEditor = document.getElementById('classEditor');
+      const textEditor = document.getElementById('textEditor');
+      const currentClasses = document.getElementById('currentClasses');
+      
+      // Informations détaillées de l'élément
+      const dimensions = element.getBoundingClientRect();
+      const computedStyle = templateDoc.defaultView.getComputedStyle(element);
+      
+      info.innerHTML = `
+        <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(236, 72, 153, 0.05)); 
+                    padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+            <div><strong>Tag:</strong> <span style="color: var(--primary);">&lt;${element.tagName.toLowerCase()}&gt;</span></div>
+            <div><strong>ID:</strong> ${element.id ? `<span style="color: var(--accent);">#${element.id}</span>` : 'aucun'}</div>
+            <div><strong>Classes:</strong> ${element.className.split(' ').filter(c => c && !c.startsWith('sp-')).length || 0}</div>
+            <div><strong>Enfants:</strong> ${element.children.length}</div>
+            <div><strong>Largeur:</strong> ${Math.round(dimensions.width)}px</div>
+            <div><strong>Hauteur:</strong> ${Math.round(dimensions.height)}px</div>
+            <div><strong>Display:</strong> ${computedStyle.display}</div>
+            <div><strong>Position:</strong> ${computedStyle.position}</div>
+          </div>
+        </div>
       `;
       
-      loadIframe(demoHTML);
-    });
-
-    // Aperçu des polices
-    document.getElementById('fontSelect').addEventListener('change', function() {
-      document.getElementById('fontPreview').style.fontFamily = this.value;
-      if (iframeDoc) {
-        iframeDoc.body.style.fontFamily = this.value;
-        pushHistory('font change');
-        if (autosave) saveSession();
-      }
-    });
-
-    // Taille de police
-    document.getElementById('fontSize').addEventListener('input', function() {
-      document.getElementById('fontSizeValue').textContent = this.value + 'px';
-      if (iframeDoc) {
-        iframeDoc.body.style.fontSize = this.value + 'px';
-        pushHistory('font size change');
-        if (autosave) saveSession();
-      }
-    });
-
-    // Palettes de couleurs prédéfinies
-    document.querySelectorAll('.color-option').forEach(option => {
-      option.addEventListener('click', function() {
-        document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
-        this.classList.add('active');
-        
-        const primary = this.getAttribute('data-primary');
-        const accent = this.getAttribute('data-accent');
-        
-        document.getElementById('colorPrimary').value = primary;
-        document.getElementById('colorAccent').value = accent;
-        
-        updateColors();
-      });
-    });
-
-    // Mise à jour des couleurs
-    function updateColors() {
-      if (!iframeDoc) return;
+      // Classes CSS
+      classEditor.value = element.className.replace(/sp-\S+/g, '').trim();
       
-      const primary = document.getElementById('colorPrimary').value;
-      const accent = document.getElementById('colorAccent').value;
-      const text = document.getElementById('colorText').value;
-      const background = document.getElementById('colorBackground').value;
+      // Contenu texte
+      const textNodes = Array.from(element.childNodes).filter(node => node.nodeType === 3);
+      textEditor.value = textNodes.map(node => node.textContent).join('').trim();
       
-      // Mettre à jour les variables CSS
-      iframeDoc.documentElement.style.setProperty('--primary', primary);
-      iframeDoc.documentElement.style.setProperty('--accent', accent);
-      iframeDoc.documentElement.style.setProperty('--text', text);
-      iframeDoc.documentElement.style.setProperty('--background', background);
+      // Afficher les classes actuelles avec catégorisation
+      const classes = element.className.split(' ').filter(c => c.trim() && !c.startsWith('sp-'));
+      currentClasses.innerHTML = '';
       
-      // Mettre à jour les éléments avec ces couleurs
-      iframeDoc.querySelectorAll('header').forEach(el => {
-        el.style.backgroundColor = primary;
-      });
-      
-      iframeDoc.querySelectorAll('.btn').forEach(el => {
-        el.style.backgroundColor = accent;
-      });
-      
-      iframeDoc.body.style.color = text;
-      iframeDoc.body.style.backgroundColor = background;
-      
-      pushHistory('colors update');
-      if (autosave) saveSession();
-    }
-
-    // Écouteurs pour les changements de couleur
-    document.getElementById('colorPrimary').addEventListener('input', updateColors);
-    document.getElementById('colorAccent').addEventListener('input', updateColors);
-    document.getElementById('colorText').addEventListener('input', updateColors);
-    document.getElementById('colorBackground').addEventListener('input', updateColors);
-
-    // Drag & Drop amélioré
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropZone.classList.add('active');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('active');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('active');
-      const file = e.dataTransfer.files[0];
-      
-      if (file && file.type === 'text/html') {
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          loadIframe(evt.target.result);
-        };
-        reader.onerror = () => {
-          showNotification('Erreur lors de la lecture du fichier', 'error');
-        };
-        reader.readAsText(file);
-      } else {
-        showNotification('Veuillez déposer un fichier HTML valide.', 'error');
-      }
-    });
-
-    // Activer/désactiver le déplacement des images
-    document.getElementById('enableDragBtn').addEventListener('click', function() {
-      dragEnabled = !dragEnabled;
-      
-      if (dragEnabled) {
-        this.textContent = 'Désactiver le déplacement';
-        this.style.backgroundColor = '#4CAF50';
-        this.style.color = 'white';
-        showNotification('Mode déplacement activé ! Cliquez sur une image et faites-la glisser pour la déplacer.', 'success');
-      } else {
-        this.textContent = 'Activer le déplacement';
-        this.style.backgroundColor = '';
-        this.style.color = '';
-      }
-    });
-
-    // Réinitialiser la position des images
-    document.getElementById('resetPositionBtn').addEventListener('click', function() {
-      if (!iframeDoc) return;
-      
-      iframeDoc.querySelectorAll('img').forEach(img => {
-        img.dataset.tx = 0;
-        img.dataset.ty = 0;
-        img.style.transform = '';
-      });
-      
-      pushHistory('reset images');
-      if (autosave) saveSession();
-      showNotification('Position des images réinitialisée !', 'success');
-    });
-
-    // Gestion SEO
-    document.getElementById('seoTitle').addEventListener('input', (e) => {
-      if (iframeDoc) {
-        iframeDoc.title = e.target.value;
-        pushHistory('seo title');
-        if (autosave) saveSession();
-      }
-    });
-
-    document.getElementById('seoDesc').addEventListener('input', (e) => {
-      if (!iframeDoc) return;
-      let metaDesc = iframeDoc.querySelector('meta[name="description"]');
-      if (!metaDesc) {
-        metaDesc = iframeDoc.createElement('meta');
-        metaDesc.name = 'description';
-        iframeDoc.head.appendChild(metaDesc);
-      }
-      metaDesc.content = e.target.value;
-      pushHistory('seo description');
-      if (autosave) saveSession();
-    });
-
-    // Gestion des images
-    document.getElementById('replaceImageBtn').addEventListener('click', () => {
-      if (!selectedImage) {
-        showNotification('Veuillez d\'abord sélectionner une image en cliquant dessus.', 'warning');
-        return;
-      }
-      document.getElementById('imageUploader').click();
-    });
-
-    document.getElementById('imageUploader').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file || !selectedImage) return;
-      
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        selectedImage.src = evt.target.result;
-        pushHistory('image replace');
-        if (autosave) saveSession();
-        showNotification('Image remplacée avec succès', 'success');
-      };
-      reader.onerror = () => {
-        showNotification('Erreur lors du chargement de l\'image', 'error');
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // Contrôles de taille d'image
-    document.getElementById('imgWidth').addEventListener('input', (e) => {
-      if (selectedImage) {
-        selectedImage.style.width = e.target.value + '%';
-        document.getElementById('widthValue').textContent = e.target.value + '%';
-        pushHistory('image width');
-        if (autosave) saveSession();
-      }
-    });
-
-    // Téléchargement
-    document.getElementById('downloadBtn').addEventListener('click', () => {
-      if (!iframeDoc) {
-        showNotification('Veuillez d\'abord charger un template.', 'warning');
-        return;
-      }
-      
-      try {
-        const blob = new Blob([iframeDoc.documentElement.outerHTML], {type: 'text/html'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'template-simpleplate.html';
-        a.click();
-        URL.revokeObjectURL(url);
-        showNotification('Template téléchargé avec succès', 'success');
-      } catch(e) {
-        console.error('Erreur lors du téléchargement:', e);
-        showNotification('Erreur lors du téléchargement', 'error');
-      }
-    });
-
-    // Export ZIP
-    document.getElementById('exportZipBtn').addEventListener('click', () => {
-      if (!iframeDoc) {
-        showNotification('Veuillez d\'abord charger un template.', 'warning');
-        return;
-      }
-      
-      setLoading(true);
-      
-      try {
-        const zip = new JSZip();
-        zip.file('index.html', iframeDoc.documentElement.outerHTML);
-        
-        // Ajouter les images au ZIP
-        const imgs = Array.from(iframeDoc.querySelectorAll('img'));
-        let promises = [];
-        
-        imgs.forEach((img, idx) => {
-          const src = img.src;
-          if (src.startsWith('data:')) {
-            const arr = src.split(',');
-            const mime = arr[0].match(/data:(.*);base64/)[1];
-            const b64 = arr[1];
-            zip.file('assets/image_' + idx + '.' + mime.split('/')[1], b64, {base64: true});
-          } else {
-            promises.push(
-              fetch(src)
-                .then(r => r.blob())
-                .then(b => {
-                  zip.file('assets/image_' + idx + getExt(src), b);
-                })
-                .catch(() => {})
-            );
-          }
-        });
-        
-        Promise.all(promises).then(() => {
-          zip.generateAsync({type: 'blob'}).then(content => {
-            saveAs(content, 'simpleplate-template.zip');
-            setLoading(false);
-            showNotification('Export ZIP terminé avec succès', 'success');
+      if (classes.length > 0) {
+        classes.forEach(className => {
+          const span = document.createElement('span');
+          span.className = 'class-item' + (isTailwindClass(className) ? ' tailwind' : '');
+          span.textContent = className;
+          span.title = 'Cliquez pour supprimer';
+          span.addEventListener('click', () => {
+            removeClass(className);
           });
-        }).catch(e => {
-          console.error('Erreur lors de l\'export ZIP:', e);
-          setLoading(false);
-          showNotification('Erreur lors de l\'export ZIP', 'error');
+          currentClasses.appendChild(span);
         });
-      } catch(e) {
-        console.error('Erreur lors de l\'export ZIP:', e);
-        setLoading(false);
-        showNotification('Erreur lors de l\'export ZIP', 'error');
-      }
-    });
-
-    function getExt(url) {
-      try {
-        const p = url.split('?')[0];
-        const ext = p.substring(p.lastIndexOf('.')) || '.png';
-        return ext;
-      } catch(e) {
-        return '.png';
-      }
-    }
-
-    // Undo/Redo
-    document.getElementById('undoBtn').addEventListener('click', undo);
-    document.getElementById('redoBtn').addEventListener('click', redo);
-
-    // Raccourcis clavier
-    window.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-        e.preventDefault();
-        undo();
-      }
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'Z'))) {
-        e.preventDefault();
-        redo();
-      }
-    });
-
-    // Autosave
-    document.getElementById('toggleAutosave').addEventListener('click', () => {
-      autosave = !autosave;
-      document.getElementById('autosaveStatus').textContent = autosave ? 'Autosave: on' : 'Autosave: off';
-      if (autosave) {
-        saveSession();
-        autosaveTimer = setInterval(() => saveSession(), 5000);
-        showNotification('Sauvegarde automatique activée', 'success');
       } else {
-        clearInterval(autosaveTimer);
-        showNotification('Sauvegarde automatique désactivée', 'warning');
+        currentClasses.innerHTML = '<span style="color: var(--text-muted); font-size: 12px;">Aucune classe CSS</span>';
       }
-    });
-
-    // Restaurer session
-    document.getElementById('restoreSessionBtn').addEventListener('click', () => {
-      const s = localStorage.getItem('simpleplate-session');
-      if (!s) {
-        showNotification('Aucune session trouvée', 'warning');
-        return;
-      }
-      if (confirm('Restaurer la session sauvegardée ?')) {
-        loadIframe(s);
-      }
-    });
-
-    // Réinitialisation
-    document.getElementById('resetBtn').addEventListener('click', () => {
-      if (confirm('Voulez-vous vraiment réinitialiser l\'éditeur ? Toutes les modifications seront perdues.')) {
-        location.reload();
-      }
-    });
-
-    // Aide
-    document.getElementById('helpBtn').addEventListener('click', () => {
-      showNotification(`
-        SimplePlate Éditeur - Aide:
-        1. Glissez-déposez un fichier HTML ou chargez un exemple
-        2. Double-cliquez sur les textes pour les modifier
-        3. Cliquez sur les images pour les sélectionner
-        4. Utilisez les options de la barre latérale pour personnaliser
-        5. Activez le déplacement pour déplacer les images
-        6. Utilisez Ctrl+Z/Ctrl+Y pour annuler/rétablir
-        7. Téléchargez votre template finalisé
-      `, 'success', 8000);
-    });
-
-    // Basculer la sidebar
-    document.getElementById('sidebarToggle').addEventListener('click', () => {
-      document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
-    });
-
-    // Gestionnaire d'images
-    document.getElementById('imageManagerBtn').addEventListener('click', () => {
-      document.getElementById('imageManagerModal').style.display = 'flex';
-      updateImageManager();
-    });
-
-    document.getElementById('closeImageManagerModal').addEventListener('click', () => {
-      document.getElementById('imageManagerModal').style.display = 'none';
-    });
-
-    // Mettre à jour le gestionnaire d'images
-    function updateImageManager() {
-      const imageManager = document.getElementById('imageManager');
-      imageManager.innerHTML = '';
       
-      imageLibrary.forEach((image, index) => {
-        const imageItem = document.createElement('div');
-        imageItem.className = 'image-item';
-        imageItem.innerHTML = `
-          <img src="${image.url}" alt="Image ${index}">
-          <button class="delete" data-index="${index}">×</button>
-        `;
-        imageItem.addEventListener('click', () => {
-          document.querySelectorAll('.image-item').forEach(item => item.classList.remove('active'));
-          imageItem.classList.add('active');
-        });
-        imageManager.appendChild(imageItem);
-      });
-      
-      // Ajouter les écouteurs pour les boutons de suppression
-      document.querySelectorAll('.image-item .delete').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const index = parseInt(btn.getAttribute('data-index'));
-          imageLibrary.splice(index, 1);
-          updateImageManager();
-        });
-      });
+      // Afficher l'aperçu des classes
+      previewClasses();
     }
-
-    // Upload d'images en lot
-    document.getElementById('bulkImageUpload').addEventListener('change', (e) => {
-      const files = e.target.files;
-      if (files.length === 0) return;
+    
+    // Mettre à jour le chemin de l'élément avec style
+    function updateElementPath(element) {
+      const path = [];
+      let current = element;
       
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (!file.type.startsWith('image/')) continue;
-        
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          imageLibrary.push({
-            url: event.target.result,
-            name: file.name
-          });
-          if (i === files.length - 1) {
-            updateImageManager();
-            showNotification(`${files.length} image(s) ajoutée(s) à la bibliothèque`, 'success');
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Insérer une image sélectionnée
-    document.getElementById('insertSelectedImage').addEventListener('click', () => {
-      const activeItem = document.querySelector('.image-item.active');
-      if (!activeItem) {
-        showNotification('Veuillez d\'abord sélectionner une image', 'warning');
-        return;
-      }
-      
-      const imgIndex = parseInt(activeItem.querySelector('.delete').getAttribute('data-index'));
-      const imageUrl = imageLibrary[imgIndex].url;
-      
-      if (!iframeDoc) {
-        showNotification('Veuillez d\'abord charger un template', 'warning');
-        return;
-      }
-      
-      // Créer une nouvelle image
-      const newImg = iframeDoc.createElement('img');
-      newImg.src = imageUrl;
-      newImg.alt = 'Nouvelle image';
-      newImg.style.maxWidth = '100%';
-      newImg.style.height = 'auto';
-      
-      // Ajouter au body
-      iframeDoc.body.appendChild(newImg);
-      
-      // Re-attacher les écouteurs
-      attachElementListeners();
-      
-      pushHistory('image added');
-      if (autosave) saveSession();
-      
-      document.getElementById('imageManagerModal').style.display = 'none';
-      showNotification('Image insérée avec succès', 'success');
-    });
-
-    // Ajouter des modules
-    document.getElementById('addModuleBtn').addEventListener('click', () => {
-      document.getElementById('moduleModal').style.display = 'flex';
-    });
-
-    document.getElementById('closeModuleModal').addEventListener('click', () => {
-      document.getElementById('moduleModal').style.display = 'none';
-    });
-
-    // Gestion des modules
-    document.querySelectorAll('.module-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const moduleType = card.getAttribute('data-module');
-        addModule(moduleType);
-        document.getElementById('moduleModal').style.display = 'none';
-      });
-    });
-
-    function addModule(moduleType) {
-      if (!iframeDoc) {
-        showNotification('Veuillez d\'abord charger un template', 'warning');
-        return;
-      }
-      
-      let moduleHTML = '';
-      
-      switch(moduleType) {
-        case 'hero':
-          moduleHTML = `
-            <section class="hero" style="background: #f5f5f5; padding: 4rem 1rem; text-align: center;">
-              <div class="container">
-                <h1>Titre principal</h1>
-                <p>Description de votre site ou service.</p>
-                <a href="#" class="btn" style="display: inline-block; background: var(--accent); color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin-top: 1rem;">En savoir plus</a>
-              </div>
-            </section>
-          `;
-          break;
-        case 'features':
-          moduleHTML = `
-            <section class="features" style="padding: 3rem 1rem;">
-              <div class="container">
-                <h2 style="text-align: center; margin-bottom: 2rem;">Nos fonctionnalités</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
-                  <div class="feature" style="text-align: center;">
-                    <h3>Fonctionnalité 1</h3>
-                    <p>Description de la fonctionnalité.</p>
-                  </div>
-                  <div class="feature" style="text-align: center;">
-                    <h3>Fonctionnalité 2</h3>
-                    <p>Description de la fonctionnalité.</p>
-                  </div>
-                  <div class="feature" style="text-align: center;">
-                    <h3>Fonctionnalité 3</h3>
-                    <p>Description de la fonctionnalité.</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-          `;
-          break;
-        case 'gallery':
-          moduleHTML = `
-            <section class="gallery" style="padding: 3rem 1rem;">
-              <div class="container">
-                <h2 style="text-align: center; margin-bottom: 2rem;">Galerie</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
-                  <img src="https://via.placeholder.com/300x200/6a3fb5/ffffff?text=Image+1" alt="Image 1" style="width: 100%; height: auto; border-radius: 8px;">
-                  <img src="https://via.placeholder.com/300x200/ff7a59/ffffff?text=Image+2" alt="Image 2" style="width: 100%; height: auto; border-radius: 8px;">
-                  <img src="https://via.placeholder.com/300x200/333333/ffffff?text=Image+3" alt="Image 3" style="width: 100%; height: auto; border-radius: 8px;">
-                </div>
-              </div>
-            </section>
-          `;
-          break;
-        case 'contact':
-          moduleHTML = `
-            <section class="contact" style="padding: 3rem 1rem; background: #f5f5f5;">
-              <div class="container">
-                <h2 style="text-align: center; margin-bottom: 2rem;">Contactez-nous</h2>
-                <form style="max-width: 500px; margin: 0 auto;">
-                  <div style="margin-bottom: 1rem;">
-                    <label for="name" style="display: block; margin-bottom: 0.5rem;">Nom</label>
-                    <input type="text" id="name" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
-                  </div>
-                  <div style="margin-bottom: 1rem;">
-                    <label for="email" style="display: block; margin-bottom: 0.5rem;">Email</label>
-                    <input type="email" id="email" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
-                  </div>
-                  <div style="margin-bottom: 1rem;">
-                    <label for="message" style="display: block; margin-bottom: 0.5rem;">Message</label>
-                    <textarea id="message" rows="5" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
-                  </div>
-                  <button type="submit" style="background: var(--primary); color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Envoyer</button>
-                </form>
-              </div>
-            </section>
-          `;
-          break;
-        case 'team':
-          moduleHTML = `
-            <section class="team" style="padding: 3rem 1rem;">
-              <div class="container">
-                <h2 style="text-align: center; margin-bottom: 2rem;">Notre équipe</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
-                  <div style="text-align: center;">
-                    <img src="https://via.placeholder.com/150x150/6a3fb5/ffffff?text=Photo" alt="Membre 1" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
-                    <h3>Nom du membre</h3>
-                    <p>Poste</p>
-                  </div>
-                  <div style="text-align: center;">
-                    <img src="https://via.placeholder.com/150x150/ff7a59/ffffff?text=Photo" alt="Membre 2" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
-                    <h3>Nom du membre</h3>
-                    <p>Poste</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-          `;
-          break;
-        case 'testimonials':
-          moduleHTML = `
-            <section class="testimonials" style="padding: 3rem 1rem; background: #f5f5f5;">
-              <div class="container">
-                <h2 style="text-align: center; margin-bottom: 2rem;">Témoignages</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-                  <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                    <p>"Excellent service ! Je recommande vivement."</p>
-                    <p><strong>- Client satisfait</strong></p>
-                  </div>
-                  <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                    <p>"Très professionnel et à l'écoute."</p>
-                    <p><strong>- Autre client</strong></p>
-                  </div>
-                </div>
-              </div>
-            </section>
-          `;
-          break;
-      }
-      
-      // Ajouter le module au body
-      iframeDoc.body.insertAdjacentHTML('beforeend', moduleHTML);
-      
-      // Re-attacher les écouteurs
-      attachElementListeners();
-      
-      pushHistory('module added');
-      if (autosave) saveSession();
-      
-      showNotification('Module ajouté avec succès', 'success');
-    }
-
-    // Charger HTML + CSS
-    document.getElementById('loadFilesBtn').addEventListener('click', () => {
-      document.getElementById('filesModal').style.display = 'flex';
-    });
-
-    document.getElementById('closeFilesModal').addEventListener('click', () => {
-      document.getElementById('filesModal').style.display = 'none';
-    });
-
-    document.getElementById('loadFiles').addEventListener('click', () => {
-      const htmlFile = document.getElementById('htmlFile').files[0];
-      const cssFile = document.getElementById('cssFile').files[0];
-      
-      if (!htmlFile) {
-        showNotification('Veuillez sélectionner un fichier HTML', 'warning');
-        return;
-      }
-      
-      const htmlReader = new FileReader();
-      htmlReader.onload = (e) => {
-        let htmlContent = e.target.result;
-        
-        if (cssFile) {
-          const cssReader = new FileReader();
-          cssReader.onload = (e) => {
-            const cssContent = e.target.result;
-            // Injecter le CSS dans le HTML
-            const styleTag = `<style>${cssContent}</style>`;
-            if (htmlContent.includes('</head>')) {
-              htmlContent = htmlContent.replace('</head>', styleTag + '</head>');
-            } else {
-              htmlContent = styleTag + htmlContent;
-            }
-            loadIframe(htmlContent);
-            document.getElementById('filesModal').style.display = 'none';
-          };
-          cssReader.readAsText(cssFile);
-        } else {
-          loadIframe(htmlContent);
-          document.getElementById('filesModal').style.display = 'none';
+      while (current && current !== templateDoc.body) {
+        let selector = current.tagName.toLowerCase();
+        if (current.id) selector = `<span style="color: var(--accent);">#${current.id}</span>`;
+         else if (current.className) {
+          const firstClass = current.className.split(' ').find(c => c && !c.startsWith('sp-'));
+          if (firstClass) selector += `<span style="color: var(--primary);">.${firstClass}</span>`;
         }
-      };
-      htmlReader.readAsText(htmlFile);
-    });
-
-    // Gestion du menu contextuel
-    document.getElementById('editText').addEventListener('click', () => {
-      if (selectedEl) {
-        startInlineEdit(selectedEl);
+        path.unshift(selector);
+        current = current.parentElement;
       }
-      contextMenu.style.display = 'none';
-    });
-
-    document.getElementById('changeImage').addEventListener('click', () => {
-      if (selectedEl && selectedEl.tagName === 'IMG') {
-        selectImage(selectedEl);
-        document.getElementById('imageUploader').click();
+      
+      document.getElementById('elementPath').innerHTML = path.join(' › ');
+    }
+    
+    // Vérifier si c'est une classe Tailwind
+    function isTailwindClass(className) {
+      const tailwindPrefixes = ['bg-', 'text-', 'p-', 'm-', 'w-', 'h-', 'flex', 'grid', 'border', 'rounded', 
+                                'shadow', 'hover:', 'focus:', 'transition', 'animate', 'font-', 'space-'];
+      return tailwindPrefixes.some(prefix => className.startsWith(prefix));
+    }
+    
+    // Supprimer une classe
+    function removeClass(className) {
+      if (selectedElement) {
+        selectedElement.classList.remove(className);
+        updatePropertyPanel(selectedElement);
+        addToHistory();
+        autoSave();
+        showNotification(`Classe "${className}" supprimée`, 'success');
       }
-      contextMenu.style.display = 'none';
-    });
-
-    document.getElementById('deleteElement').addEventListener('click', () => {
-      if (selectedEl && selectedEl.parentNode) {
-        selectedEl.parentNode.removeChild(selectedEl);
-        pushHistory('element deleted');
-        if (autosave) saveSession();
-        showNotification('Élément supprimé', 'success');
+    }
+    
+    // Construire l'arbre des éléments
+    function buildElementTree() {
+      const inspector = document.getElementById('elementInspector');
+      inspector.innerHTML = '';
+      
+      if (!templateDoc || !templateDoc.body) {
+        inspector.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted);">Aucun template chargé</div>';
+        return;
       }
-      contextMenu.style.display = 'none';
-    });
-
-    document.getElementById('duplicateElement').addEventListener('click', () => {
-      if (selectedEl && selectedEl.parentNode) {
-        const clone = selectedEl.cloneNode(true);
-        selectedEl.parentNode.insertBefore(clone, selectedEl.nextSibling);
-        pushHistory('element duplicated');
-        if (autosave) saveSession();
+      
+      function buildTreeNode(element, level = 0) {
+        if (!element.tagName || ['SCRIPT', 'STYLE', 'META', 'LINK'].includes(element.tagName)) return;
+        
+        const item = document.createElement('div');
+        item.className = 'element-item';
+        item.style.paddingLeft = `${14 + level * 20}px`;
+        
+        const hasText = Array.from(element.childNodes).some(node => 
+          node.nodeType === 3 && node.textContent.trim()
+        );
+        
+        if (hasText) item.classList.add('editable');
+        
+        const tag = element.tagName.toLowerCase();
+        const id = element.id ? `#${element.id}` : '';
+        const classes = element.className.split(' ')
+          .filter(c => c && !c.startsWith('sp-'))
+          .slice(0, 2)
+          .join('.');
+        
+        item.innerHTML = `
+          <span style="color: var(--primary);">&lt;${tag}&gt;</span>
+          ${id ? `<span style="color: var(--accent); margin-left: 4px;">${id}</span>` : ''}
+          ${classes ? `<span style="color: var(--text-muted); margin-left: 4px;">.${classes}</span>` : ''}
+        `;
+        
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectElement(element);
+          document.querySelectorAll('.element-item').forEach(i => i.classList.remove('selected'));
+          item.classList.add('selected');
+        });
+        
+        inspector.appendChild(item);
+        
+        Array.from(element.children).forEach(child => {
+          buildTreeNode(child, level + 1);
+        });
+      }
+      
+      buildTreeNode(templateDoc.body);
+    }
+    
+    // Mettre en surbrillance dans l'arbre
+    function highlightInTree(element) {
+      const items = document.querySelectorAll('.element-item');
+      items.forEach(item => item.classList.remove('selected'));
+    }
+    
+    // Rechercher des éléments dans l'arbre
+    function searchElements() {
+      const searchTerm = document.getElementById('elementSearch').value.toLowerCase();
+      const items = document.querySelectorAll('.element-item');
+      
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+    
+    // Gestion de l'historique
+    function addToHistory() {
+      if (templateDoc) {
+        const state = templateDoc.documentElement.outerHTML;
+        history.push(state);
+        if (history.length > maxHistorySize) {
+          history.shift();
+        }
+        redoStack = [];
+        updateHistoryButtons();
+      }
+    }
+    
+    function updateHistoryButtons() {
+      document.getElementById('undoBtn').disabled = history.length <= 1;
+      document.getElementById('redoBtn').disabled = redoStack.length === 0;
+    }
+    
+    function undo() {
+      if (history.length > 1) {
+        redoStack.push(history.pop());
+        const previousState = history[history.length - 1];
+        loadTemplate(previousState);
+        updateHistoryButtons();
+        showNotification('Action annulée', 'success');
+      }
+    }
+    
+    function redo() {
+      if (redoStack.length > 0) {
+        const nextState = redoStack.pop();
+        history.push(nextState);
+        loadTemplate(nextState);
+        updateHistoryButtons();
+        showNotification('Action rétablie', 'success');
+      }
+    }
+    
+    // Mettre à jour les classes
+    function updateClasses() {
+      if (selectedElement) {
+        const newClasses = document.getElementById('classEditor').value;
+        selectedElement.className = newClasses + ' sp-editable sp-selected';
+        updatePropertyPanel(selectedElement);
+        buildElementTree();
+        addToHistory();
+        autoSave();
+        showNotification('Classes mises à jour', 'success');
+      }
+    }
+    
+    // Mettre à jour le texte
+    function updateText() {
+      if (selectedElement) {
+        const newText = document.getElementById('textEditor').value;
+        const textNodes = Array.from(selectedElement.childNodes).filter(node => node.nodeType === 3);
+        
+        if (textNodes.length > 0) {
+          textNodes[0].textContent = newText;
+          textNodes.slice(1).forEach(node => node.remove());
+        } else if (newText) {
+          selectedElement.insertBefore(document.createTextNode(newText), selectedElement.firstChild);
+        }
+        
+        buildElementTree();
+        addToHistory();
+        autoSave();
+        showNotification('Texte mis à jour', 'success');
+      }
+    }
+    
+    // Édition rapide
+    function quickEdit() {
+      if (selectedElement) {
+        makeElementEditable(selectedElement);
+      } else {
+        showNotification('Sélectionnez d\'abord un élément', 'warning');
+      }
+    }
+    
+    // Dupliquer un élément
+    function duplicateElement() {
+      if (selectedElement && selectedElement.parentElement) {
+        const clone = selectedElement.cloneNode(true);
+        clone.classList.remove('sp-selected');
+        selectedElement.parentElement.insertBefore(clone, selectedElement.nextSibling);
+        setTimeout(() => {
+          setupTemplateInteraction();
+          buildElementTree();
+          addToHistory();
+          autoSave();
+        }, 100);
         showNotification('Élément dupliqué', 'success');
       }
-      contextMenu.style.display = 'none';
-    });
-
-    // Sauvegarde automatique à la fermeture
-    window.addEventListener('beforeunload', () => {
-      if (iframeDoc) {
-        try {
-          localStorage.setItem('simpleplate-session', iframeDoc.documentElement.outerHTML);
-        } catch(e) {
-          console.error('Erreur lors de la sauvegarde automatique:', e);
-        }
+    }
+    
+    // Supprimer un élément
+    function deleteElement() {
+      if (selectedElement && selectedElement !== templateDoc.body) {
+        selectedElement.remove();
+        selectedElement = null;
+        clearSelection();
+        buildElementTree();
+        addToHistory();
+        autoSave();
+        showNotification('Élément supprimé', 'success');
       }
-    });
-
-    // Initialisation
-    updateHistoryButtons();
+    }
+    
+    // Gestion du téléchargement de fichiers
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (file && file.type === 'text/html') {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          loadTemplate(event.target.result);
+        };
+        reader.readAsText(file);
+      }
+    }
+    
+    // Charger à partir du code
+    function loadFromCode() {
+      const code = document.getElementById('htmlCodeInput').value;
+      if (code.trim()) {
+        loadTemplate(code);
+        document.getElementById('htmlCodeInput').value = '';
+      }
+    }
+    
+    // Charger un exemple
+    function loadExample() {
+      const exampleHTML = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landing Page Exemple</title>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+</head>
+<body class="bg-gray-50">
+  <header class="bg-white shadow-lg">
+    <nav class="container mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="text-2xl font-bold text-purple-600">MonSite</div>
+        <div class="flex space-x-6">
+          <a href="#" class="text-gray-700 hover:text-purple-600 transition">Accueil</a>
+          <a href="#" class="text-gray-700 hover:text-purple-600 transition">Services</a>
+          <a href="#" class="text-gray-700 hover:text-purple-600 transition">Contact</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+  
+  <section class="container mx-auto px-6 py-16">
+    <div class="text-center">
+      <h1 class="text-5xl font-bold text-gray-900 mb-4">Bienvenue sur SimplePlate</h1>
+      <p class="text-xl text-gray-600 mb-8">Créez et modifiez vos templates HTML avec Tailwind CSS</p>
+      <button class="bg-purple-600 text-white px-8 py-4 rounded-lg hover:bg-purple-700 transition shadow-lg">
+        Commencer maintenant
+      </button>
+    </div>
+  </section>
+  
+  <section class="container mx-auto px-6 py-16">
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition">
+        <div class="text-4xl mb-4">🚀</div>
+        <h3 class="text-xl font-bold mb-2">Rapide</h3>
+        <p class="text-gray-600">Éditez vos templates en temps réel</p>
+      </div>
+      <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition">
+        <div class="text-4xl mb-4">🎨</div>
+        <h3 class="text-xl font-bold mb-2">Moderne</h3>
+        <p class="text-gray-600">Utilisez Tailwind CSS pour un design moderne</p>
+      </div>
+      <div class="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition">
+        <div class="text-4xl mb-4">💡</div>
+        <h3 class="text-xl font-bold mb-2">Intuitif</h3>
+        <p class="text-gray-600">Interface simple et facile à utiliser</p>
+      </div>
+    </div>
+  </section>
+</body>
+</html>`;
+      loadTemplate(exampleHTML);
+    }
+    
+    // Gestion du glisser-déposer
+    function handleDragOver(e) {
+      e.preventDefault();
+      dropZone.classList.add('active');
+    }
+    
+    function handleDragLeave() {
+      dropZone.classList.remove('active');
+    }
+    
+    function handleDrop(e) {
+      e.preventDefault();
+      dropZone.classList.remove('active');
+      
+      const file = e.dataTransfer.files[0];
+      if (file && file.type === 'text/html') {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          loadTemplate(event.target.result);
+        };
+        reader.readAsText(file);
+      }
+    }
+    
+    // Changer la vue (desktop/tablet/mobile)
+    function changeViewport() {
+      const viewport = this.dataset.viewport;
+      const wrapper = document.getElementById('canvasWrapper');
+      
+      document.querySelectorAll('.viewport-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      
+      wrapper.className = 'canvas-wrapper';
+      if (viewport === 'tablet') wrapper.classList.add('tablet');
+      if (viewport === 'mobile') wrapper.classList.add('mobile');
+      
+      showNotification(`Vue ${viewport} activée`, 'success');
+    }
+    
+    // Ajouter une classe Tailwind rapide
+    function addTailwindClass() {
+      if (selectedElement) {
+        selectedElement.classList.add(this.dataset.class);
+        updatePropertyPanel(selectedElement);
+        addToHistory();
+        autoSave();
+        showNotification(`Classe "${this.dataset.class}" ajoutée`, 'success');
+      } else {
+        showNotification('Sélectionnez d\'abord un élément', 'warning');
+      }
+    }
+    
+    // Aperçu des classes
+    function previewClasses() {
+      const classPreview = document.getElementById('classPreview');
+      const classEditor = document.getElementById('classEditor');
+      
+      if (classEditor.value.trim()) {
+        classPreview.textContent = `Classes: ${classEditor.value}`;
+        classPreview.style.display = 'block';
+      } else {
+        classPreview.style.display = 'none';
+      }
+    }
+    
+    // Prévisualiser le template
+    function previewTemplate() {
+      if (templateDoc) {
+        const previewWindow = window.open('', '_blank');
+        const cleanHTML = templateDoc.documentElement.outerHTML
+          .replace(/sp-editable|sp-selected|sp-highlight/g, '')
+          .replace(/data-sp-index="[^"]*"/g, '');
+        previewWindow.document.write(cleanHTML);
+        previewWindow.document.close();
+        showNotification('Aperçu ouvert dans une nouvelle fenêtre', 'success');
+      }
+    }
+    
+    // Exporter le template
+    function exportTemplate() {
+      if (templateDoc) {
+        const cleanHTML = templateDoc.documentElement.outerHTML
+          .replace(/sp-editable|sp-selected|sp-highlight/g, '')
+          .replace(/data-sp-index="[^"]*"/g, '')
+          .replace(/\s+class=""/g, '');
+        
+        const blob = new Blob([cleanHTML], { type: 'text/html;charset=utf-8' });
+        saveAs(blob, 'template-export.html');
+        showNotification('Template exporté avec succès !', 'success');
+      }
+    }
+    
+    // Basculer les sections
+    function toggleSection() {
+      const content = this.nextElementSibling;
+      const icon = this.querySelector('.toggle-icon');
+      
+      content.classList.toggle('collapsed');
+      icon.style.transform = content.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0)';
+    }
+    
+    // Sauvegarde automatique
+    function autoSave() {
+      if (isAutoSaving || !templateDoc) return;
+      
+      isAutoSaving = true;
+      const indicator = document.getElementById('autoSaveIndicator');
+      const savingIcon = indicator.querySelector('.saving');
+      const saveStatus = document.getElementById('saveStatus');
+      
+      savingIcon.style.display = 'inline';
+      saveStatus.textContent = 'Sauvegarde...';
+      
+      // Simuler un délai de sauvegarde
+      setTimeout(() => {
+        if (templateDoc) {
+          const htmlContent = templateDoc.documentElement.outerHTML;
+          localStorage.setItem('simpleplate-template', htmlContent);
+          localStorage.setItem('simpleplate-last-save', new Date().toISOString());
+        }
+        
+        savingIcon.style.display = 'none';
+        saveStatus.textContent = 'Sauvegardé';
+        
+        // Réinitialiser après 2 secondes
+        setTimeout(() => {
+          saveStatus.textContent = 'Sauvegardé';
+        }, 2000);
+        
+        isAutoSaving = false;
+      }, 500);
+    }
   </script>
 </body>
 </html>
